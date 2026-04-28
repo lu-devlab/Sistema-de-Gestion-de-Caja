@@ -1,282 +1,299 @@
 {% extends 'base.html' %}
 {% load static %}
 
-{% block title %}Historial diario - CajaPulso{% endblock %}
+{% block title %}Movimientos - CajaPulso{% endblock %}
 
 {% block extra_css %}
 <link rel="stylesheet" href="{% static 'css/apertura.css' %}">
 <link rel="stylesheet" href="{% static 'css/movimientos.css' %}">
-<link rel="stylesheet" href="{% static 'css/cierre.css' %}">
-<link rel="stylesheet" href="{% static 'css/historial.css' %}">
 {% endblock %}
 
 {% block content %}
 <div class="dash">
-    {% include 'includes/sidebar.html' with active_module='movimientos' %}
+    <aside class="side">
+        <div class="brand">
+            <span class="brand-text">CajaPulso</span>
+            <small>Cash Control System</small>
+        </div>
+
+        <nav class="nav">
+            <a href="{% url 'apertura:inicio' %}">
+                <i class="fa-solid fa-lock-open"></i>
+                <span>Apertura de caja</span>
+            </a>
+            <a href="{% url 'movimientos:inicio' %}" class="active">
+                <i class="fa-solid fa-money-bill-transfer"></i>
+                <span>Movimientos</span>
+            </a>
+            <a href="{% url 'cierre:inicio' %}">
+                <i class="fa-solid fa-cash-register"></i>
+                <span>Cierre diario</span>
+            </a>
+            <a href="{% url 'historial:inicio' %}">
+                <i class="fa-solid fa-clock-rotate-left"></i>
+                <span>Historial diario</span>
+            </a>
+            <a href="{% url 'reportes:inicio' %}">
+                <i class="fa-solid fa-chart-column"></i>
+                <span>Reportes</span>
+            </a>
+        </nav>
+
+        <div class="mini">
+            <div>
+                <strong>Soporte CajaPulso</strong>
+                <small>Atención y ayuda operativa</small>
+            </div>
+        </div>
+    </aside>
 
     <main class="main">
-        {% include 'includes/header.html' with header_title="Historial diario" header_subtitle="Revision de jornadas y
-        detalle operativo" %}
+        <header class="top">
+            <div class="title-group">
+                <div class="header-title">Movimientos</div>
+            </div>
+
+            <div class="top-actions">
+                <div class="icon-btn">
+                    <i class="fa-solid fa-bell"></i>
+                    <span class="dot"></span>
+                </div>
+                <div class="icon-btn" id="btn-configuracion">
+                    <i class="fa-solid fa-gear"></i>
+                </div>
+                {% include 'includes/header_dropdown.html' %}
+                <div class="user-profile">
+                    <div class="u-avatar">
+                        <i class="fa-solid fa-circle-user"></i>
+                    </div>
+                </div>
+            </div>
+        </header>
 
         <div class="content-body">
             <div class="grid4 resumen-cajas">
                 <div class="cardx">
-                    <div class="label">Fecha</div>
-                    <div class="value">{{ fecha_hoy|date:"d/m/Y" }}</div>
-                    <div class="note">Fecha actual del sistema</div>
+                    <div class="label">CAJA DEL DÍA</div>
+                    <div class="value">
+                        {% if caja_hoy %}ABIERTA{% else %}Pendiente{% endif %}
+                    </div>
+                    <div class="note">Estado para registrar movimientos</div>
                 </div>
                 <div class="cardx">
-                    <div class="label">Hora</div>
-                    <div class="value">{{ hora_actual }}</div>
-                    <div class="note">Hora actual del sistema</div>
+                    <div class="label">INGRESOS</div>
+                    <div class="value">S/ {{ total_ingresos }}</div>
+                    <div class="note">Total acumulado del día</div>
                 </div>
                 <div class="cardx">
-                    <div class="label">Jornadas</div>
-                    <div class="value">{{ historial|length }}</div>
-                    <div class="note">Dias registrados en historial</div>
+                    <div class="label">EGRESOS</div>
+                    <div class="value">S/ {{ total_egresos }}</div>
+                    <div class="note">Salidas registradas del día</div>
                 </div>
                 <div class="cardx">
-                    <div class="label">Detalle</div>
-                    <div class="value">{% if caja_detalle %}{{ caja_detalle.fecha_caja|date:"d/m/Y" }}{% else %}Sin
-                        datos{% endif %}</div>
-                    <div class="note">Jornada seleccionada</div>
+                    <div class="label">INGRESOS DIGITALES</div>
+                    <div class="value">S/ {{ total_digital }}</div>
+                    <div class="note">Yape y otros medios</div>
+                </div>
+                <div class="cardx">
+                    <div class="label">MOVIMIENTO EFECTIVO</div>
+                    <div class="value">S/ {{ total_efectivo }}</div>
+                    <div class="note">{{ fecha_hoy|date:"d/m/Y" }}</div>
                 </div>
             </div>
 
-            <div class="grid2 historial-grid">
+            <div class="grid2 movimientos-grid">
                 <div class="card-large">
                     <div class="card-header">
                         <div class="card-title-group">
-                            <span class="label">Historial de jornadas</span>
-                            <p class="note">Consulte dias anteriores y revise cada jornada.</p>
+                            <span class="label">Registro de movimientos</span>
+                            <p class="note">
+                                Registre ingresos y egresos de la caja diaria.
+                            </p>
                         </div>
                     </div>
 
-                    <form method="get" class="filtro-historial" data-async="si">
-                        <div class="filtro-grupo">
-                            <label for="fecha" class="filtro-label">Buscar jornada por fecha</label>
-                            <input type="date" id="fecha" name="fecha" value="{{ fecha_seleccionada }}"
-                                class="filtro-input">
+                    {% if caja_hoy %}
+                    <form id="form-movimiento" method="post" data-async="si">
+                        {% csrf_token %}
+                        <input type="hidden" name="accion"
+                            value="{% if movimiento_editar %}editar{% else %}registrar{% endif %}">
+                        {% if movimiento_editar %}
+                        <input type="hidden" name="id_movimiento" value="{{ movimiento_editar.id_movimiento }}">
+                        {% endif %}
+
+                        <div class="form-grid">
+                            <div class="field-box">
+                                <label for="tipo_movimiento" class="form-label">
+                                    Tipo de movimiento
+                                </label>
+                                <select id="tipo_movimiento" name="tipo_movimiento" class="form-select campo-premium"
+                                    required>
+                                    <option value="">Seleccione</option>
+                                    <option value="INGRESO"
+                                        {% if movimiento_editar.tipo_movimiento == 'INGRESO' %}
+                                        selected
+                                        {% endif %}>Ingreso</option>
+                                    <option value="EGRESO"
+                                        {% if movimiento_editar.tipo_movimiento == 'EGRESO' %}
+                                        selected
+                                        {% endif %}>Egreso</option>
+                                </select>
+                            </div>
+
+                            <div class="field-box">
+                                <label for="medio_pago" class="form-label">
+                                    Medio de pago
+                                </label>
+                                <select id="medio_pago" name="medio_pago" class="form-select campo-premium" required>
+                                    <option value="">Seleccione</option>
+                                    {% for medio in medios_pago %}
+                                    <option value="{{ medio }}"
+                                        {% if movimiento_editar.medio_pago == medio %}
+                                        selected
+                                        {% endif %}>
+                                        {{ medio }}
+                                    </option>
+                                    {% endfor %}
+                                </select>
+                            </div>
                         </div>
-                        <div class="filtro-acciones">
-                            <button type="submit" class="btn">Consultar dia</button>
-                            <a href="{% url 'historial:inicio' %}" class="btn-avanzado btn-secundario">Ver todo</a>
+
+                        <div class="form-grid form-grid-secundario">
+                            <div class="field-box">
+                                <label for="monto" class="form-label">
+                                    Monto
+                                </label>
+                                <div class="input-group">
+                                    <span class="input-group-text">S/</span>
+                                    <input id="monto" name="monto" type="number" step="0.01" min="0.01"
+                                        class="form-control"
+                                        value="{% if movimiento_editar %}{{ movimiento_editar.monto }}{% endif %}"
+                                        required>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="mb-4">
+                            <label for="descripcion" class="form-label">
+                                Descripción
+                            </label>
+                            <textarea id="descripcion" name="descripcion" rows="3" class="form-control"
+                                placeholder="Detalle del movimiento"
+                                required>{% if movimiento_editar %}{{ movimiento_editar.descripcion }}{% endif %}</textarea>
+                        </div>
+
+                        <div class="acciones-formulario">
+                            <button type="submit" class="btn-apertura">
+                                {% if movimiento_editar %}
+                                ACTUALIZAR MOVIMIENTO
+                                {% else %}
+                                REGISTRAR MOVIMIENTO
+                                {% endif %}
+                            </button>
+                            {% if movimiento_editar %}
+                            <a href="{% url 'movimientos:inicio' %}" class="btn btn-outline-secondary">
+                                Cancelar edición
+                            </a>
+                            {% endif %}
                         </div>
                     </form>
-
-                    {% if historial %}
-                    <div class="tabla-wrap tabla-movimientos">
-                        <table class="tabla-cierre tabla-listado">
-                            <thead>
-                                <tr>
-                                    <th>Fecha</th>
-                                    <th>Apertura</th>
-                                    <th>Ingresos</th>
-                                    <th>Egresos</th>
-                                    <th>Estado</th>
-                                    <th>Cierre</th>
-                                    <th>Diferencia</th>
-                                    <th>Ver</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {% for item in historial %}
-                                <tr>
-                                    <td>{{ item.caja.fecha_caja|date:"d/m/Y" }}</td>
-                                    <td>S/ {{ item.caja.monto_inicial }}</td>
-                                    <td>S/ {{ item.total_ingresos }}</td>
-                                    <td>S/ {{ item.total_egresos }}</td>
-                                    <td>{{ item.caja.estado_caja }}</td>
-                                    <td>
-                                        {% if item.cierre %}
-                                        {{ item.cierre.estado_cierre }}
-                                        {% else %}
-                                        Sin cierre
-                                        {% endif %}
-                                    </td>
-                                    <td>
-                                        {% if item.cierre %}
-                                        S/ {{ item.diferencia }}
-                                        {% else %}
-                                        Pendiente
-                                        {% endif %}
-                                    </td>
-                                    <td>
-                                        <a href="{% url 'historial:inicio' %}?fecha={{ item.caja.fecha_caja|date:'Y-m-d' }}#detalle-historial"
-                                            class="accion-link" data-async-link="si">
-                                            Ver detalle
-                                        </a>
-                                    </td>
-                                </tr>
-                                {% endfor %}
-                            </tbody>
-                        </table>
-                    </div>
                     {% else %}
                     <div class="chart-area">
                         <div class="empty-state">
-                            <i class="fa-solid fa-clock-rotate-left"></i>
-                            <p>Todavia no hay jornadas registradas.</p>
+                            <i class="fa-solid fa-vault"></i>
+                            <p>Primero debe abrir la caja para registrar movimientos</p>
                         </div>
                     </div>
                     {% endif %}
                 </div>
 
                 <div class="card-side">
-                    <div class="label">Resumen del detalle</div>
+                    <div class="label">Resumen del módulo</div>
                     <div class="close-summary mt-4">
                         <div class="s-row">
-                            <span>Apertura</span>
-                            <b>{% if caja_detalle %}S/ {{ caja_detalle.monto_inicial }}{% else %}S/ 0.00{% endif %}</b>
+                            <span>FECHA</span>
+                            <b>{{ fecha_hoy|date:"d/m/Y" }}</b>
                         </div>
-                        <div class="s-row">
-                            <span>Ingresos</span>
-                            <b>S/ {{ total_ingresos_detalle }}</b>
+                        <div class="s-row mt-2">
+                            <span>HORA</span>
+                            <b>{{ hora_actual }}</b>
                         </div>
-                        <div class="s-row">
-                            <span>Egresos</span>
-                            <b>S/ {{ total_egresos_detalle }}</b>
+                        <div class="s-row mt-2">
+                            <span>EDICIÓN</span>
+                            <b>{% if permite_editar %}Permitida{% else %}Bloqueada{% endif %}</b>
                         </div>
-                        <div class="s-row">
-                            <span>Cierre</span>
-                            <b>
-                                {% if cierre_detalle %}
-                                {{ cierre_detalle.estado_cierre }}
-                                {% else %}
-                                Pendiente
-                                {% endif %}
-                            </b>
-                        </div>
-                        <div class="s-row">
-                            <span>Diferencia</span>
-                            <b>S/ {{ diferencia_detalle }}</b>
+                        <div class="s-row mt-2">
+                            <span>ELIMINACIÓN</span>
+                            <b>{% if permite_eliminar %}Permitida{% else %}Bloqueada{% endif %}</b>
                         </div>
                     </div>
                 </div>
             </div>
 
-            <div id="detalle-historial" class="card-large mt-panel">
+            <div class="card-large mt-panel">
                 <div class="card-header">
                     <div class="card-title-group">
-                        <span class="label">Detalle de la jornada</span>
-                        <p class="note">Apertura, movimientos y cierre del dia seleccionado.</p>
+                        <span class="label">Movimientos del día</span>
+                        <p class="note">
+                            Revise, edite o elimine los movimientos registrados.
+                        </p>
                     </div>
                 </div>
 
-                {% if caja_detalle %}
-                <div class="detalle-historial-grid">
-                    <div class="detalle-columna">
-                        <h3 class="subtitulo-panel">Apertura</h3>
-                        <div class="close-summary">
-                            <div class="s-row">
-                                <span>Fecha</span>
-                                <b>{{ caja_detalle.fecha_caja|date:"d/m/Y" }}</b>
-                            </div>
-                            <div class="s-row">
-                                <span>Hora</span>
-                                <b>{{ caja_detalle.hora_apertura }}</b>
-                            </div>
-                            <div class="s-row">
-                                <span>Monto inicial</span>
-                                <b>S/ {{ caja_detalle.monto_inicial }}</b>
-                            </div>
-                            <div class="s-row">
-                                <span>Estado</span>
-                                <b>{{ caja_detalle.estado_caja }}</b>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="detalle-columna">
-                        <h3 class="subtitulo-panel">Cierre</h3>
-                        {% if cierre_detalle %}
-                        <div class="close-summary">
-                            <div class="s-row">
-                                <span>Estado</span>
-                                <b>{{ cierre_detalle.estado_cierre }}</b>
-                            </div>
-                            <div class="s-row">
-                                <span>Saldo real</span>
-                                <b>S/ {{ cierre_detalle.saldo_real }}</b>
-                            </div>
-                            <div class="s-row">
-                                <span>Saldo digital</span>
-                                <b>S/ {{ cierre_detalle.saldo_real_digital }}</b>
-                            </div>
-                            <div class="s-row">
-                                <span>Diferencia</span>
-                                <b>S/ {{ diferencia_detalle }}</b>
-                            </div>
-                        </div>
-                        {% else %}
-                        <div class="chart-area historial-vacio">
-                            <div class="empty-state">
-                                <i class="fa-solid fa-cash-register"></i>
-                                <p>Esta jornada no tiene cierre registrado.</p>
-                            </div>
-                        </div>
-                        {% endif %}
-                    </div>
-                </div>
-
-                <div class="resumen-jornada mt-panel">
-                    <div class="resumen-item">
-                        <span class="resumen-label">Apertura del dia</span>
-                        <strong>S/ {{ caja_detalle.monto_inicial }}</strong>
-                    </div>
-                    <div class="resumen-item">
-                        <span class="resumen-label">Movimientos del dia</span>
-                        <strong>{{ movimientos_detalle|length }}</strong>
-                    </div>
-                    <div class="resumen-item">
-                        <span class="resumen-label">Cierre del dia</span>
-                        <strong>
-                            {% if cierre_detalle %}
-                            {{ cierre_detalle.estado_cierre }}
-                            {% else %}
-                            Pendiente
-                            {% endif %}
-                        </strong>
-                    </div>
-                    <div class="resumen-item">
-                        <span class="resumen-label">Diferencia encontrada</span>
-                        <strong>S/ {{ diferencia_detalle }}</strong>
-                    </div>
-                </div>
-
-                <div class="tabla-avanzado-wrap tabla-avanzado-movimientos mt-panel">
-                    <table class="tabla-avanzado-cierre tabla-avanzado-listado">
+                {% if movimientos_hoy %}
+                <div class="tabla-premium-wrap tabla-premium-movimientos">
+                    <table class="tabla-premium-cierre tabla-premium-listado">
                         <thead>
                             <tr>
                                 <th>Hora</th>
                                 <th>Tipo</th>
-                                <th>Descripcion</th>
+                                <th>Descripción</th>
                                 <th>Monto</th>
-                                <th>Medio</th>
+                                <th>Acciones</th>
                             </tr>
                         </thead>
                         <tbody>
-                            {% for movimiento in movimientos_detalle %}
+                            {% for movimiento in movimientos_hoy %}
                             <tr>
                                 <td>{{ movimiento.hora_movimiento }}</td>
-                                <td>{{ movimiento.tipo_movimiento }}</td>
+                                <td>
+                                    <span class="tipo-texto tipo-{{ movimiento.tipo_movimiento|lower }}">
+                                        {{ movimiento.tipo_movimiento }}
+                                    </span>
+                                </td>
                                 <td>{{ movimiento.descripcion }}</td>
-                                <td>S/ {{ movimiento.monto }}</td>
-                                <td>{{ movimiento.medio_pago }}</td>
-                            </tr>
-                            {% empty %}
-                            <tr>
-                                <td colspan="5">No hay movimientos registrados en esta jornada.</td>
+                                <td>{{ movimiento.medio_pago }} - S/ {{ movimiento.monto }}</td>
+                                <td>
+                                    <div class="acciones-tabla">
+                                        {% if permite_editar %}
+                                        <a href="{% url 'movimientos:inicio' %}?editar={{ movimiento.id_movimiento }}#form-movimiento"
+                                            class="accion-link" data-async-link="si">
+                                            Editar
+                                        </a>
+                                        {% endif %}
+                                        {% if permite_eliminar %}
+                                        <form method="post" class="form-eliminar" data-async="si">
+                                            {% csrf_token %}
+                                            <input type="hidden" name="accion" value="eliminar">
+                                            <input type="hidden" name="id_movimiento"
+                                                value="{{ movimiento.id_movimiento }}">
+                                            <button type="submit" class="accion-borrar">
+                                                Eliminar
+                                            </button>
+                                        </form>
+                                        {% endif %}
+                                    </div>
+                                </td>
                             </tr>
                             {% endfor %}
                         </tbody>
                     </table>
                 </div>
                 {% else %}
-                <div class="chart-area">
+                <div class="chart-area tabla-vacia">
                     <div class="empty-state">
-                        <i class="fa-solid fa-folder-open"></i>
-                        <p>No hay detalle disponible todavia.</p>
+                        <i class="fa-solid fa-money-bill-transfer"></i>
+                        <p>Todavía no hay movimientos registrados hoy</p>
                     </div>
                 </div>
                 {% endif %}
