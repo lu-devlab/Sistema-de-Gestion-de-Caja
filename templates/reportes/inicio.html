@@ -123,10 +123,10 @@
                                 {% for item in jornadas %}
                                 <tr>
                                     <td>{{ item.caja.fecha_caja|date:"d/m/Y" }}</td>
-                                    <td>S/ {{ item.caja.monto_inicial }}</td>
-                                    <td>S/ {{ item.total_ingresos }}</td>
-                                    <td>S/ {{ item.total_egresos }}</td>
-                                    <td>S/ {{ item.saldo_neto }}</td>
+                                    <td>{{ app_currency_symbol }} {{ item.caja.monto_inicial }}</td>
+                                    <td>{{ app_currency_symbol }} {{ item.total_ingresos }}</td>
+                                    <td>{{ app_currency_symbol }} {{ item.total_egresos }}</td>
+                                    <td>{{ app_currency_symbol }} {{ item.saldo_neto }}</td>
                                     <td>
                                         {% if item.cierre %}
                                         {{ item.cierre.estado_cierre }}
@@ -136,7 +136,7 @@
                                     </td>
                                     <td>
                                         {% if item.cierre %}
-                                        S/ {{ item.diferencia }}
+                                        {{ app_currency_symbol }} {{ item.diferencia }}
                                         {% else %}
                                         Pendiente
                                         {% endif %}
@@ -161,23 +161,23 @@
                     <div class="close-summary mt-4">
                         <div class="s-row">
                             <span>APERTURA</span>
-                            <b>S/ {{ total_apertura }}</b>
+                            <b>{{ app_currency_symbol }} {{ total_apertura }}</b>
                         </div>
                         <div class="s-row mt-2">
                             <span>INGRESOS</span>
-                            <b>S/ {{ total_ingresos }}</b>
+                            <b>{{ app_currency_symbol }} {{ total_ingresos }}</b>
                         </div>
                         <div class="s-row mt-2">
                             <span>EGRESOS</span>
-                            <b>S/ {{ total_egresos }}</b>
+                            <b>{{ app_currency_symbol }} {{ total_egresos }}</b>
                         </div>
                         <div class="s-row mt-2">
                             <span>SALDO NETO</span>
-                            <b>S/ {{ saldo_neto }}</b>
+                            <b>{{ app_currency_symbol }} {{ saldo_neto }}</b>
                         </div>
                         <div class="s-row mt-2">
                             <span>DIFERENCIAS</span>
-                            <b>S/ {{ total_diferencia }}</b>
+                            <b>{{ app_currency_symbol }} {{ total_diferencia }}</b>
                         </div>
                     </div>
                 </div>
@@ -213,23 +213,23 @@
                             </tr>
                             <tr>
                                 <td>Total apertura</td>
-                                <td>S/ {{ total_apertura }}</td>
+                                <td>{{ app_currency_symbol }} {{ total_apertura }}</td>
                             </tr>
                             <tr>
                                 <td>Total ingresos</td>
-                                <td>S/ {{ total_ingresos }}</td>
+                                <td>{{ app_currency_symbol }} {{ total_ingresos }}</td>
                             </tr>
                             <tr>
                                 <td>Total egresos</td>
-                                <td>S/ {{ total_egresos }}</td>
+                                <td>{{ app_currency_symbol }} {{ total_egresos }}</td>
                             </tr>
                             <tr class="fila-total-tabla">
                                 <td>Saldo neto</td>
-                                <td>S/ {{ saldo_neto }}</td>
+                                <td>{{ app_currency_symbol }} {{ saldo_neto }}</td>
                             </tr>
                             <tr>
                                 <td>Diferencias encontradas</td>
-                                <td>S/ {{ total_diferencia }}</td>
+                                <td>{{ app_currency_symbol }} {{ total_diferencia }}</td>
                             </tr>
                             <tr>
                                 <td>Jornadas revisadas</td>
@@ -263,7 +263,7 @@
                     </div>
                     <div class="resumen-item">
                         <span class="resumen-label">Diferencia</span>
-                        <strong>S/ {{ detalle_jornada.diferencia }}</strong>
+                        <strong>{{ app_currency_symbol }} {{ detalle_jornada.diferencia }}</strong>
                     </div>
                 </div>
                 {% endif %}

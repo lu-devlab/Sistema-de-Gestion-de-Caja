@@ -1,0 +1,58 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Moneda - CajaPulso{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/configuracion.css' %}">
+{% endblock %}
+
+{% block content %}
+<div class="dash">
+    {% include 'includes/sidebar.html' with active_module='configuracion' %}
+
+    <main class="main">
+        {% include 'includes/header.html' with header_title="Configuracion" header_subtitle="Moneda" %}
+
+        <div class="content-body">
+            <div class="card-large">
+                <div class="card-header">
+                    <div class="card-title-group">
+                        <span class="label">Moneda de trabajo</span>
+                    </div>
+                </div>
+
+                <form method="post" class="mt-panel">
+                    {% csrf_token %}
+
+                    <div class="form-grid">
+                        <div class="field-box">
+                            <label for="moneda" class="form-label">Moneda principal</label>
+                            <select id="moneda" name="moneda" class="form-control select-moneda" required>
+                                {% for codigo, nombre in monedas_disponibles %}
+                                <option value="{{ codigo }}" {% if configuracion.moneda == codigo %}selected{% endif %}>
+                                    {{ nombre }}
+                                </option>
+                                {% endfor %}
+                            </select>
+                        </div>
+
+                        <div class="field-box">
+                            <label for="moneda_actual" class="form-label">Codigo actual</label>
+                            <input type="text" id="moneda_actual" class="form-control input-readonly"
+                                value="{{ configuracion.moneda }}" readonly>
+                        </div>
+                    </div>
+
+                    <div class="form-footer-box">
+                        <p class="note">Esta configuracion cambia la moneda visible en todo el sistema. No convierte valores ya registrados.</p>
+                        <div class="acciones-formulario">
+                            <button type="submit" class="btn-guardar">Guardar moneda</button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </main>
+</div>
+{% endblock %}

@@ -84,9 +84,9 @@
                                 {% for item in historial %}
                                 <tr>
                                     <td>{{ item.caja.fecha_caja|date:"d/m/Y" }}</td>
-                                    <td>S/ {{ item.caja.monto_inicial }}</td>
-                                    <td>S/ {{ item.total_ingresos }}</td>
-                                    <td>S/ {{ item.total_egresos }}</td>
+                                    <td>{{ app_currency_symbol }} {{ item.caja.monto_inicial }}</td>
+                                    <td>{{ app_currency_symbol }} {{ item.total_ingresos }}</td>
+                                    <td>{{ app_currency_symbol }} {{ item.total_egresos }}</td>
                                     <td>{{ item.caja.estado_caja }}</td>
                                     <td>
                                         {% if item.cierre %}
@@ -97,7 +97,7 @@
                                     </td>
                                     <td>
                                         {% if item.cierre %}
-                                        S/ {{ item.diferencia }}
+                                        {{ app_currency_symbol }} {{ item.diferencia }}
                                         {% else %}
                                         Pendiente
                                         {% endif %}
@@ -128,15 +128,15 @@
                     <div class="close-summary mt-4">
                         <div class="s-row">
                             <span>Apertura</span>
-                            <b>{% if caja_detalle %}S/ {{ caja_detalle.monto_inicial }}{% else %}S/ 0.00{% endif %}</b>
+                            <b>{% if caja_detalle %}{{ app_currency_symbol }} {{ caja_detalle.monto_inicial }}{% else %}{{ app_currency_symbol }} 0.00{% endif %}</b>
                         </div>
                         <div class="s-row">
                             <span>Ingresos</span>
-                            <b>S/ {{ total_ingresos_detalle }}</b>
+                            <b>{{ app_currency_symbol }} {{ total_ingresos_detalle }}</b>
                         </div>
                         <div class="s-row">
                             <span>Egresos</span>
-                            <b>S/ {{ total_egresos_detalle }}</b>
+                            <b>{{ app_currency_symbol }} {{ total_egresos_detalle }}</b>
                         </div>
                         <div class="s-row">
                             <span>Cierre</span>
@@ -150,7 +150,7 @@
                         </div>
                         <div class="s-row">
                             <span>Diferencia</span>
-                            <b>S/ {{ diferencia_detalle }}</b>
+                            <b>{{ app_currency_symbol }} {{ diferencia_detalle }}</b>
                         </div>
                     </div>
                 </div>
@@ -179,7 +179,7 @@
                             </div>
                             <div class="s-row">
                                 <span>Monto inicial</span>
-                                <b>S/ {{ caja_detalle.monto_inicial }}</b>
+                                <b>{{ app_currency_symbol }} {{ caja_detalle.monto_inicial }}</b>
                             </div>
                             <div class="s-row">
                                 <span>Estado</span>
@@ -198,15 +198,15 @@
                             </div>
                             <div class="s-row">
                                 <span>Saldo real</span>
-                                <b>S/ {{ cierre_detalle.saldo_real }}</b>
+                                <b>{{ app_currency_symbol }} {{ cierre_detalle.saldo_real }}</b>
                             </div>
                             <div class="s-row">
                                 <span>Saldo digital</span>
-                                <b>S/ {{ cierre_detalle.saldo_real_digital }}</b>
+                                <b>{{ app_currency_symbol }} {{ cierre_detalle.saldo_real_digital }}</b>
                             </div>
                             <div class="s-row">
                                 <span>Diferencia</span>
-                                <b>S/ {{ diferencia_detalle }}</b>
+                                <b>{{ app_currency_symbol }} {{ diferencia_detalle }}</b>
                             </div>
                         </div>
                         {% else %}
@@ -223,7 +223,7 @@
                 <div class="resumen-jornada mt-panel">
                     <div class="resumen-item">
                         <span class="resumen-label">Apertura del dia</span>
-                        <strong>S/ {{ caja_detalle.monto_inicial }}</strong>
+                        <strong>{{ app_currency_symbol }} {{ caja_detalle.monto_inicial }}</strong>
                     </div>
                     <div class="resumen-item">
                         <span class="resumen-label">Movimientos del dia</span>
@@ -241,7 +241,7 @@
                     </div>
                     <div class="resumen-item">
                         <span class="resumen-label">Diferencia encontrada</span>
-                        <strong>S/ {{ diferencia_detalle }}</strong>
+                        <strong>{{ app_currency_symbol }} {{ diferencia_detalle }}</strong>
                     </div>
                 </div>
 
@@ -262,7 +262,7 @@
                                 <td>{{ movimiento.hora_movimiento }}</td>
                                 <td>{{ movimiento.tipo_movimiento }}</td>
                                 <td>{{ movimiento.descripcion }}</td>
-                                <td>S/ {{ movimiento.monto }}</td>
+                                <td>{{ app_currency_symbol }} {{ movimiento.monto }}</td>
                                 <td>{{ movimiento.medio_pago }}</td>
                             </tr>
                             {% empty %}

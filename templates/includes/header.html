@@ -4,19 +4,15 @@
         <div class="header-subtitle">{{ header_subtitle|default:"Sistema de control" }}</div>
     </div>
 
-    {% if messages %}
-    <div class="global-messages-container">
-        {% for message in messages %}
-        <div class="mensaje-inline {{ message.tags }}">{{ message }}</div>
-        {% endfor %}
-    </div>
-    {% endif %}
-
     <div class="top-actions">
-        <div class="icon-btn">
+        <a href="{% url 'notificaciones:inicio' %}"
+            class="icon-btn icon-btn-link{% if active_module == 'notificaciones' %} active{% endif %}"
+            data-notification-bell aria-label="Notificaciones">
             <i class="fa-solid fa-bell"></i>
-            <span class="dot"></span>
-        </div>
+            {% if app_notifications_unread_count %}
+            <span class="notification-badge">{{ app_notifications_unread_display }}</span>
+            {% endif %}
+        </a>
         <div class="icon-btn" id="btn-configuracion">
             <i class="fa-solid fa-gear"></i>
         </div>

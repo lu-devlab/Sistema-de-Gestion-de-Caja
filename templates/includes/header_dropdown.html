@@ -28,18 +28,18 @@
             <span>Gestionar foto</span>
         </a>
 
-        <a href="#" class="dropdown-item">
+        <a href="{% url 'configuracion:moneda' %}" class="dropdown-item">
             <span>Moneda</span>
         </a>
 
-        <a href="#" class="dropdown-item">
+        <a href="{% url 'configuracion:acceso' %}" class="dropdown-item">
             <span>Acceso de la cuenta</span>
         </a>
 
         <div class="dropdown-divider"></div>
 
         <a href="{% url 'usuarios:logout' %}" class="dropdown-item dropdown-logout">
-            <span>Cerrar sesión</span>
+            <span>Cerrar sesion</span>
         </a>
     </div>
 </div>

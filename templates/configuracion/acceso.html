@@ -1,0 +1,79 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Acceso de la cuenta - CajaPulso{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/configuracion.css' %}">
+{% endblock %}
+
+{% block content %}
+<div class="dash">
+    {% include 'includes/sidebar.html' with active_module='configuracion' %}
+
+    <main class="main">
+        {% include 'includes/header.html' with header_title="Configuracion" header_subtitle="Acceso de la cuenta" %}
+
+        <div class="content-body">
+            <div class="card-large">
+                <div class="card-header">
+                    <div class="card-title-group">
+                        <span class="label">Credenciales de acceso</span>
+                    </div>
+                </div>
+
+                <form method="post" class="mt-panel">
+                    {% csrf_token %}
+
+                    <div class="form-grid">
+                        <div class="field-box">
+                            <label for="correo" class="form-label">Correo de acceso</label>
+                            <input type="email" id="correo" name="correo" class="form-control"
+                                value="{{ user.correo }}" required>
+                        </div>
+                        <div class="field-box">
+                            <label for="rol" class="form-label">Rol</label>
+                            <input type="text" id="rol" class="form-control input-readonly"
+                                value="{{ user.rol|title }}" readonly>
+                        </div>
+                    </div>
+
+                    <div class="form-grid">
+                        <div class="field-box">
+                            <label for="password_actual" class="form-label">Contraseña actual</label>
+                            <input type="password" id="password_actual" name="password_actual" class="form-control"
+                                placeholder="Ingresa tu contraseña actual">
+                        </div>
+                        <div class="field-box">
+                            <label for="fecha_creacion" class="form-label">Cuenta creada</label>
+                            <input type="text" id="fecha_creacion" class="form-control input-readonly"
+                                value="{{ user.fecha_creacion|date:'d/m/Y H:i' }}" readonly>
+                        </div>
+                    </div>
+
+                    <div class="form-grid">
+                        <div class="field-box">
+                            <label for="nueva_contraseña" class="form-label">Nueva contraseña</label>
+                            <input type="password" id="nueva_contraseña" name="nueva_contraseña" class="form-control"
+                                placeholder="Nueva contraseña">
+                        </div>
+                        <div class="field-box">
+                            <label for="repetir_contraseña" class="form-label">Confirmar contraseña</label>
+                            <input type="password" id="repetir_contraseña" name="repetir_contraseña"
+                                class="form-control" placeholder="Repite la nueva contraseña">
+                        </div>
+                    </div>
+
+                    <div class="form-footer-box">
+                        <p class="note">Aqui puedes actualizar el correo principal y la clave del sistema.</p>
+
+                        <div class="acciones-formulario">
+                            <button type="submit" class="btn-guardar">Guardar acceso</button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </main>
+</div>
+{% endblock %}

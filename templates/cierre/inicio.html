@@ -27,17 +27,17 @@
                 </div>
                 <div class="cardx">
                     <div class="label">INGRESOS EFECTIVO</div>
-                    <div class="value">S/ {{ ingresos_efectivo }}</div>
+                    <div class="value">{{ app_currency_symbol }} {{ ingresos_efectivo }}</div>
                     <div class="note">Ingresos que sí entran a caja</div>
                 </div>
                 <div class="cardx">
                     <div class="label">INGRESOS DIGITALES</div>
-                    <div class="value">S/ {{ ingresos_digitales }}</div>
+                    <div class="value">{{ app_currency_symbol }} {{ ingresos_digitales }}</div>
                     <div class="note">Yape y otros medios</div>
                 </div>
                 <div class="cardx">
                     <div class="label">SALDO ESPERADO</div>
-                    <div class="value">S/ {{ saldo_esperado }}</div>
+                    <div class="value">{{ app_currency_symbol }} {{ saldo_esperado }}</div>
                     <div class="note">Calculado solo con efectivo</div>
                 </div>
             </div>
@@ -72,15 +72,15 @@
                             </div>
                             <div class="s-row mt-2">
                                 <span>SALDO REAL</span>
-                                <b>S/ {{ cierre_hoy.saldo_real }}</b>
+                                <b>{{ app_currency_symbol }} {{ cierre_hoy.saldo_real }}</b>
                             </div>
                             <div class="s-row mt-2">
                                 <span>SALDO REAL DIGITAL</span>
-                                <b>S/ {{ cierre_hoy.saldo_real_digital }}</b>
+                                <b>{{ app_currency_symbol }} {{ cierre_hoy.saldo_real_digital }}</b>
                             </div>
                             <div class="s-row mt-2">
                                 <span>DIFERENCIA</span>
-                                <b>S/ {{ diferencia_visible }}</b>
+                                <b>{{ app_currency_symbol }} {{ diferencia_visible }}</b>
                             </div>
                             <div class="s-row mt-2">
                                 <span>OBSERVACIÓN</span>
@@ -105,7 +105,7 @@
                                     Editar saldo real
                                 </label>
                                 <div class="input-group">
-                                    <span class="input-group-text">S/</span>
+                                    <span class="input-group-text">{{ app_currency_symbol }}</span>
                                     <input id="saldo_real_editar" name="saldo_real" type="number" step="0.01" min="0"
                                         class="form-control" value="{{ cierre_hoy.saldo_real }}" required>
                                 </div>
@@ -125,7 +125,7 @@
                                     Editar saldo real digital
                                 </label>
                                 <div class="input-group">
-                                    <span class="input-group-text">S/</span>
+                                    <span class="input-group-text">{{ app_currency_symbol }}</span>
                                     <input id="saldo_real_digital_editar" name="saldo_real_digital" type="number"
                                         step="0.01" min="0" class="form-control"
                                         value="{{ cierre_hoy.saldo_real_digital }}" required>
@@ -173,7 +173,7 @@
                                 Saldo real contado
                             </label>
                             <div class="input-group">
-                                <span class="input-group-text">S/</span>
+                                <span class="input-group-text">{{ app_currency_symbol }}</span>
                                 <input id="saldo_real" name="saldo_real" type="number" step="0.01" min="0"
                                     class="form-control" placeholder="0.00" required>
                             </div>
@@ -184,7 +184,7 @@
                                 Saldo real digital
                             </label>
                             <div class="input-group">
-                                <span class="input-group-text">S/</span>
+                                <span class="input-group-text">{{ app_currency_symbol }}</span>
                                 <input id="saldo_real_digital" name="saldo_real_digital" type="number" step="0.01"
                                     min="0" class="form-control" placeholder="0.00" required>
                             </div>
@@ -229,7 +229,7 @@
                         </div>
                         <div class="s-row mt-2">
                             <span>SALDO ESPERADO</span>
-                            <b>S/ {{ saldo_esperado }}</b>
+                            <b>{{ app_currency_symbol }} {{ saldo_esperado }}</b>
                         </div>
                     </div>
                 </div>
@@ -271,38 +271,38 @@
                             <tr>
                                 <td>Monto inicial</td>
                                 <td>
-                                    {% if caja_hoy %}S/ {{ caja_hoy.monto_inicial }}
-                                    {% else %}S/ 0.00{% endif %}
+                                    {% if caja_hoy %}{{ app_currency_symbol }} {{ caja_hoy.monto_inicial }}
+                                    {% else %}{{ app_currency_symbol }} 0.00{% endif %}
                                 </td>
                             </tr>
                             <tr>
                                 <td>Ingresos efectivo</td>
-                                <td>S/ {{ ingresos_efectivo }}</td>
+                                <td>{{ app_currency_symbol }} {{ ingresos_efectivo }}</td>
                             </tr>
                             <tr>
                                 <td>Ingresos digitales</td>
-                                <td>S/ {{ ingresos_digitales }}</td>
+                                <td>{{ app_currency_symbol }} {{ ingresos_digitales }}</td>
                             </tr>
                             <tr>
                                 <td>Egresos efectivo</td>
-                                <td>S/ {{ egresos_efectivo }}</td>
+                                <td>{{ app_currency_symbol }} {{ egresos_efectivo }}</td>
                             </tr>
                             <tr>
                                 <td>Egresos digitales</td>
-                                <td>S/ {{ egresos_digitales }}</td>
+                                <td>{{ app_currency_symbol }} {{ egresos_digitales }}</td>
                             </tr>
                             <tr class="fila-total-tabla">
                                 <td>Saldo esperado</td>
-                                <td>S/ {{ saldo_esperado }}</td>
+                                <td>{{ app_currency_symbol }} {{ saldo_esperado }}</td>
                             </tr>
                             <tr>
                                 <td>Saldo digital esperado</td>
-                                <td>S/ {{ saldo_digital_esperado }}</td>
+                                <td>{{ app_currency_symbol }} {{ saldo_digital_esperado }}</td>
                             </tr>
                             <tr>
                                 <td>Limite diferencia</td>
                                 <td>
-                                    S/ {{ limite_diferencia }}
+                                    {{ app_currency_symbol }} {{ limite_diferencia }}
                                     {% if cierre_hoy %}
                                     -
                                     {% if limite_superado %}

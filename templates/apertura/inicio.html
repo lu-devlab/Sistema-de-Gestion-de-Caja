@@ -31,7 +31,7 @@
                     <div>
                         <div class="label">MONTO INICIAL</div>
                         <div class="value">
-                            {% if caja_hoy %}S/ {{ caja_hoy.monto_inicial }}{% else %}S/ 0.00{% endif %}
+                            {% if caja_hoy %}{{ app_currency_symbol }} {{ caja_hoy.monto_inicial }}{% else %}{{ app_currency_symbol }} 0.00{% endif %}
                         </div>
                         <div class="note">Monto base</div>
                     </div>
@@ -79,7 +79,7 @@
                         </div>
                         <div class="s-row">
                             <span>MONTO INICIAL</span>
-                            <b>S/ {{ caja_hoy.monto_inicial }}</b>
+                            <b>{{ app_currency_symbol }} {{ caja_hoy.monto_inicial }}</b>
                         </div>
                         <div class="s-row border-0">
                             <span>OBSERVACIÓN</span>
@@ -91,7 +91,7 @@
                                 Actualizar monto inicial
                             </label>
                             <div class="input-group">
-                                <span class="input-group-text">S/</span>
+                                <span class="input-group-text">{{ app_currency_symbol }}</span>
                                 <input id="monto_inicial_actualizar" name="monto_inicial" type="number" step="0.01"
                                     min="0" value="{{ caja_hoy.monto_inicial }}" class="form-control" required>
                             </div>

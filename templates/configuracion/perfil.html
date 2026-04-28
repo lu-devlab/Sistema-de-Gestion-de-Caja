@@ -12,7 +12,7 @@
     {% include 'includes/sidebar.html' with active_module='configuracion' %}
 
     <main class="main">
-        {% include 'includes/header.html' with header_title="Configuración" header_subtitle="Mi perfil" %}
+        {% include 'includes/header.html' with header_title="Configuracion" header_subtitle="Mi perfil" %}
 
         <div class="content-body">
             <div class="card-large">
@@ -40,42 +40,22 @@
 
                     <div class="form-grid">
                         <div class="field-box">
-                            <label for="correo" class="form-label">Correo</label>
-                            <input type="email" id="correo" name="correo" class="form-control" value="{{ user.correo }}"
-                                required>
-                        </div>
-                        <div class="field-box">
                             <label for="dni" class="form-label">DNI</label>
                             <input type="text" id="dni" name="dni" class="form-control" placeholder="Sin registro"
                                 value="{% if user.dni %}{{ user.dni }}{% endif %}">
                         </div>
-                    </div>
-
-                    <div class="form-grid">
                         <div class="field-box">
                             <label for="telefono" class="form-label">Telefono</label>
                             <input type="text" id="telefono" name="telefono" class="form-control"
                                 placeholder="Sin registro" value="{% if user.telefono %}{{ user.telefono }}{% endif %}">
                         </div>
-                        <div class="field-box">
-                            <label for="nueva_contrasena" class="form-label">Nueva contraseña</label>
-                            <input type="password" id="nueva_contrasena" name="nueva_contrasena" class="form-control"
-                                placeholder="Nueva contraseña">
-                        </div>
-                        <div class="field-box">
-                            <label for="repetir_contrasena" class="form-label">Repetir contraseña</label>
-                            <input type="password" id="repetir_contrasena" name="repetir_contrasena"
-                                class="form-control" placeholder="Repita nueva contraseña">
-                        </div>
                     </div>
 
                     <div class="form-footer-box">
-                        <p class="note">Manten actualizados los datos principales de la cuenta
-                            interna.</p>
+                        <p class="note">Actualiza aqui los datos personales del responsable de caja.</p>
 
                         <div class="acciones-formulario">
-                            <button type="submit" class="btn-guardar">Guardar
-                                cambios</button>
+                            <button type="submit" class="btn-guardar">Guardar cambios</button>
                         </div>
                     </div>
                 </form>

@@ -4,6 +4,7 @@ const cajaPulso = (() => {
     function iniciar() {
         actualizarDatosGraficos(document);
         activarAlertas(document);
+        activarToasts(document);
         activarValidaciones(document);
         activarFiltros(document);
         activarExportacionPdf(document);
@@ -23,6 +24,133 @@ const cajaPulso = (() => {
                 mensaje.classList.add('mensaje-oculto');
             }, 3200);
         });
+    }
+
+    function activarToasts(root) {
+        const contenedor = root.querySelector('[data-toast-root]');
+
+        if (!contenedor) {
+            return;
+        }
+
+        posicionarToasts(root);
+        const toasts = contenedor.querySelectorAll('[data-toast]');
+
+        toasts.forEach((toast, indice) => {
+            if (toast.dataset.toastActivo === 'si') {
+                return;
+            }
+
+            toast.textContent = toast.textContent.trim().replace(/\.$/, '');
+            toast.dataset.toastActivo = 'si';
+
+            window.requestAnimationFrame(() => {
+                toast.classList.add('is-visible');
+            });
+
+            window.setTimeout(() => {
+                ocultarToast(toast);
+            }, 1700 + (indice * 140));
+        });
+    }
+
+    function obtenerAnclaToast(root) {
+        const selectores = [
+            '.acciones-formulario .btn-guardar',
+            '.acciones-formulario .btn-apertura',
+            '.acciones-formulario button[type="submit"]',
+            '.form-footer-box .btn-guardar',
+            '.form-footer-box button[type="submit"]',
+            '.login-right .login-btn',
+            'form button[type="submit"]',
+        ];
+
+        for (const selector of selectores) {
+            const ancla = root.querySelector(selector);
+            if (ancla) {
+                return ancla;
+            }
+        }
+
+        return null;
+    }
+
+    function posicionarToasts(root) {
+        const contenedor = document.querySelector('[data-toast-root]');
+
+        if (!contenedor) {
+            return;
+        }
+
+        const ancla = obtenerAnclaToast(root);
+
+        if (!ancla) {
+            contenedor.classList.remove('is-anchored');
+            contenedor.style.removeProperty('--toast-left');
+            contenedor.style.removeProperty('--toast-top');
+            return;
+        }
+
+        const rect = ancla.getBoundingClientRect();
+        const margen = 12;
+        const anchoEstimado = Math.min(window.innerWidth - (margen * 2), 420);
+        const mitad = anchoEstimado / 2;
+        const centro = rect.left + (rect.width / 2);
+        const left = Math.min(
+            window.innerWidth - mitad - margen,
+            Math.max(mitad + margen, centro),
+        );
+        const top = Math.max(20, rect.top - 14);
+
+        contenedor.classList.add('is-anchored');
+        contenedor.style.setProperty('--toast-left', `${left}px`);
+        contenedor.style.setProperty('--toast-top', `${top}px`);
+    }
+
+    function reposicionarToasts() {
+        posicionarToasts(document);
+    }
+
+    function ocultarToast(toast) {
+        if (!toast || toast.dataset.toastOcultando === 'si') {
+            return;
+        }
+
+        toast.dataset.toastOcultando = 'si';
+        toast.classList.remove('is-visible');
+        toast.classList.add('is-hiding');
+
+        window.setTimeout(() => {
+            const contenedor = toast.closest('[data-toast-root]');
+            toast.remove();
+
+            if (contenedor && !contenedor.querySelector('[data-toast]')) {
+                contenedor.innerHTML = '';
+            }
+        }, 240);
+    }
+
+    function sincronizarToasts(doc) {
+        const contenedorActual = document.querySelector('[data-toast-root]');
+        const nuevoContenedor = doc.querySelector('[data-toast-root]');
+
+        if (!contenedorActual || !nuevoContenedor) {
+            return;
+        }
+
+        contenedorActual.innerHTML = nuevoContenedor.innerHTML;
+        activarToasts(document);
+    }
+
+    function sincronizarCampanaNotificaciones(doc) {
+        const campanaActual = document.querySelector('[data-notification-bell]');
+        const campanaNueva = doc.querySelector('[data-notification-bell]');
+
+        if (!campanaActual || !campanaNueva) {
+            return;
+        }
+
+        campanaActual.outerHTML = campanaNueva.outerHTML;
     }
 
     function activarValidaciones(root) {
@@ -214,10 +342,13 @@ const cajaPulso = (() => {
 
             actualizarDatosGraficos(doc);
             contenidoActual.replaceWith(nuevoContenido);
+            sincronizarToasts(doc);
+            sincronizarCampanaNotificaciones(doc);
             document.title = doc.title || document.title;
             history.replaceState({}, '', destinoUrl.pathname);
             destruirGraficos();
             activarAlertas(document);
+            activarToasts(document);
             activarValidaciones(document);
             activarFiltros(document);
             activarExportacionPdf(document);
@@ -447,8 +578,9 @@ const cajaPulso = (() => {
         activarGraficos();
     }
 
-    return { iniciar, reactivarGraficos };
+    return { iniciar, reactivarGraficos, reposicionarToasts };
 })();
 
 document.addEventListener('DOMContentLoaded', cajaPulso.iniciar);
 window.addEventListener('load', cajaPulso.reactivarGraficos);
+window.addEventListener('resize', cajaPulso.reposicionarToasts);

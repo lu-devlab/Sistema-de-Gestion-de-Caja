@@ -10,65 +10,10 @@
 
 {% block content %}
 <div class="dash">
-    <aside class="side">
-        <div class="brand">
-            <span class="brand-text">CajaPulso</span>
-            <small>Cash Control System</small>
-        </div>
-
-        <nav class="nav">
-            <a href="{% url 'apertura:inicio' %}">
-                <i class="fa-solid fa-lock-open"></i>
-                <span>Apertura de caja</span>
-            </a>
-            <a href="{% url 'movimientos:inicio' %}" class="active">
-                <i class="fa-solid fa-money-bill-transfer"></i>
-                <span>Movimientos</span>
-            </a>
-            <a href="{% url 'cierre:inicio' %}">
-                <i class="fa-solid fa-cash-register"></i>
-                <span>Cierre diario</span>
-            </a>
-            <a href="{% url 'historial:inicio' %}">
-                <i class="fa-solid fa-clock-rotate-left"></i>
-                <span>Historial diario</span>
-            </a>
-            <a href="{% url 'reportes:inicio' %}">
-                <i class="fa-solid fa-chart-column"></i>
-                <span>Reportes</span>
-            </a>
-        </nav>
-
-        <div class="mini">
-            <div>
-                <strong>Soporte CajaPulso</strong>
-                <small>Atención y ayuda operativa</small>
-            </div>
-        </div>
-    </aside>
+    {% include 'includes/sidebar.html' with active_module='movimientos' %}
 
     <main class="main">
-        <header class="top">
-            <div class="title-group">
-                <div class="header-title">Movimientos</div>
-            </div>
-
-            <div class="top-actions">
-                <div class="icon-btn">
-                    <i class="fa-solid fa-bell"></i>
-                    <span class="dot"></span>
-                </div>
-                <div class="icon-btn" id="btn-configuracion">
-                    <i class="fa-solid fa-gear"></i>
-                </div>
-                {% include 'includes/header_dropdown.html' %}
-                <div class="user-profile">
-                    <div class="u-avatar">
-                        <i class="fa-solid fa-circle-user"></i>
-                    </div>
-                </div>
-            </div>
-        </header>
+        {% include 'includes/header.html' with header_title="Movimientos" header_subtitle="Registro diario de ingresos y egresos" %}
 
         <div class="content-body">
             <div class="grid4 resumen-cajas">
@@ -81,22 +26,22 @@
                 </div>
                 <div class="cardx">
                     <div class="label">INGRESOS</div>
-                    <div class="value">S/ {{ total_ingresos }}</div>
+                    <div class="value">{{ app_currency_symbol }} {{ total_ingresos }}</div>
                     <div class="note">Total acumulado del día</div>
                 </div>
                 <div class="cardx">
                     <div class="label">EGRESOS</div>
-                    <div class="value">S/ {{ total_egresos }}</div>
+                    <div class="value">{{ app_currency_symbol }} {{ total_egresos }}</div>
                     <div class="note">Salidas registradas del día</div>
                 </div>
                 <div class="cardx">
                     <div class="label">INGRESOS DIGITALES</div>
-                    <div class="value">S/ {{ total_digital }}</div>
+                    <div class="value">{{ app_currency_symbol }} {{ total_digital }}</div>
                     <div class="note">Yape y otros medios</div>
                 </div>
                 <div class="cardx">
                     <div class="label">MOVIMIENTO EFECTIVO</div>
-                    <div class="value">S/ {{ total_efectivo }}</div>
+                    <div class="value">{{ app_currency_symbol }} {{ total_efectivo }}</div>
                     <div class="note">{{ fecha_hoy|date:"d/m/Y" }}</div>
                 </div>
             </div>
@@ -164,7 +109,7 @@
                                     Monto
                                 </label>
                                 <div class="input-group">
-                                    <span class="input-group-text">S/</span>
+                                    <span class="input-group-text">{{ app_currency_symbol }}</span>
                                     <input id="monto" name="monto" type="number" step="0.01" min="0.01"
                                         class="form-control"
                                         value="{% if movimiento_editar %}{{ movimiento_editar.monto }}{% endif %}"
@@ -235,7 +180,7 @@
                     <div class="card-title-group">
                         <span class="label">Movimientos del día</span>
                         <p class="note">
-                            Revise, edite o elimine los movimientos registrados.
+                            Revise, edite o elimine los movimientos registrados
                         </p>
                     </div>
                 </div>
@@ -262,7 +207,7 @@
                                     </span>
                                 </td>
                                 <td>{{ movimiento.descripcion }}</td>
-                                <td>{{ movimiento.medio_pago }} - S/ {{ movimiento.monto }}</td>
+                                <td>{{ movimiento.medio_pago }} - {{ app_currency_symbol }} {{ movimiento.monto }}</td>
                                 <td>
                                     <div class="acciones-tabla">
                                         {% if permite_editar %}

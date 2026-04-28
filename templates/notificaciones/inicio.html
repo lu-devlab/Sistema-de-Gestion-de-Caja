@@ -1,0 +1,140 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Notificaciones - CajaPulso{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/apertura.css' %}">
+<link rel="stylesheet" href="{% static 'css/notificaciones.css' %}">
+{% endblock %}
+
+{% block content %}
+<div class="dash">
+    {% include 'includes/sidebar.html' with active_module='' %}
+
+    <main class="main">
+        {% include 'includes/header.html' with header_title="Notificaciones" header_subtitle="Centro de avisos del sistema" %}
+
+        <div class="content-body">
+            <div class="grid4 resumen-cajas">
+                <div class="cardx">
+                    <div class="label">REVISADAS AHORA</div>
+                    <div class="value">{{ notificaciones_revisadas_ahora }}</div>
+                    <div class="note">Avisos que acabas de abrir</div>
+                </div>
+                <div class="cardx">
+                    <div class="label">HISTORIAL TOTAL</div>
+                    <div class="value">{{ total_notificaciones }}</div>
+                    <div class="note">Notificaciones guardadas</div>
+                </div>
+                <div class="cardx">
+                    <div class="label">ESTADO</div>
+                    <div class="value">
+                        {% if notificaciones_revisadas_ahora %}
+                        AL DIA
+                        {% else %}
+                        SIN NOVEDAD
+                        {% endif %}
+                    </div>
+                    <div class="note">Contador limpio al revisar</div>
+                </div>
+                <div class="cardx">
+                    <div class="label">ULTIMO MOVIMIENTO</div>
+                    <div class="value">
+                        {% if ultima_notificacion %}
+                        {{ ultima_notificacion.hora_notificacion|time:"H:i" }}
+                        {% else %}
+                        --
+                        {% endif %}
+                    </div>
+                    <div class="note">
+                        {% if ultima_notificacion %}
+                        {{ ultima_notificacion.fecha_notificacion|date:"d/m/Y" }}
+                        {% else %}
+                        Sin registros
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+
+            <div class="grid2 notificaciones-grid">
+                <div class="card-large">
+                    <div class="card-header">
+                        <div class="card-title-group">
+                            <span class="label">Avisos recientes</span>
+                            <p class="note">
+                                El contador de la campana se mantiene hasta que abras este centro de notificaciones.
+                            </p>
+                        </div>
+                    </div>
+
+                    {% if notificaciones %}
+                    <div class="notificaciones-list">
+                        {% for notificacion in notificaciones %}
+                        <article class="notificacion-item {% if notificacion.recien_revisada %}notificacion-nueva{% endif %}">
+                            <div class="notificacion-top">
+                                <div>
+                                    <h3 class="notificacion-title">{{ notificacion.titulo }}</h3>
+                                    <p class="notificacion-message">{{ notificacion.mensaje }}</p>
+                                </div>
+                                <span class="notificacion-estado {% if notificacion.recien_revisada %}estado-nueva{% else %}estado-revisada{% endif %}">
+                                    {% if notificacion.recien_revisada %}
+                                    Nueva
+                                    {% else %}
+                                    Revisada
+                                    {% endif %}
+                                </span>
+                            </div>
+
+                            <div class="notificacion-meta">
+                                <span class="notificacion-tag tag-{{ notificacion.tipo_notificacion|lower }}">
+                                    {{ notificacion.tipo_label }}
+                                </span>
+                                <span>{{ notificacion.fecha_notificacion|date:"d/m/Y" }}</span>
+                                <span>{{ notificacion.hora_notificacion|time:"H:i" }}</span>
+                            </div>
+                        </article>
+                        {% endfor %}
+                    </div>
+                    {% else %}
+                    <div class="chart-area">
+                        <div class="empty-state">
+                            <i class="fa-solid fa-bell-slash"></i>
+                            <p>No hay notificaciones registradas por ahora</p>
+                        </div>
+                    </div>
+                    {% endif %}
+                </div>
+
+                <div class="card-side">
+                    <div class="label">Resumen del modulo</div>
+                    <div class="close-summary mt-4">
+                        <div class="s-row">
+                            <span>CAMPANA</span>
+                            <b>Con contador</b>
+                        </div>
+                        <div class="s-row mt-2">
+                            <span>LECTURA</span>
+                            <b>Se limpia al revisar</b>
+                        </div>
+                        <div class="s-row mt-2">
+                            <span>TIPOS</span>
+                            <b>Apertura, cierre y diferencia</b>
+                        </div>
+                        <div class="s-row mt-2">
+                            <span>ULTIMA</span>
+                            <b>
+                                {% if ultima_notificacion %}
+                                {{ ultima_notificacion.titulo }}
+                                {% else %}
+                                Sin aviso
+                                {% endif %}
+                            </b>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+</div>
+{% endblock %}
