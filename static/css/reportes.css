@@ -1,0 +1,89 @@
+/* Estilos Especificos - Consulta por Periodo y Reportes */
+
+.reportes-grid {
+    align-items: start;
+}
+
+.filtro-reportes {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 14px;
+    margin-bottom: 18px;
+    padding: 18px;
+    background: #e7f4ed;
+    border: 1px solid #cfe5d7;
+    border-radius: 20px;
+}
+
+.filtro-bloque {
+    display: grid;
+    gap: 8px;
+}
+
+.acciones-reporte {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+}
+
+.btn-pdf {
+    min-width: 148px;
+    padding: 12px 18px;
+}
+
+.grafico-panel {
+    position: relative;
+    min-height: 320px;
+    padding-top: 8px;
+}
+
+@media (max-width: 1100px) {
+    .filtro-reportes {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+@media (max-width: 860px) {
+    .acciones-reporte {
+        width: 100%;
+        justify-content: stretch;
+    }
+
+    .btn-pdf {
+        width: 100%;
+    }
+
+    .filtro-reportes {
+        grid-template-columns: 1fr;
+    }
+}
+
+@media print {
+
+    .side,
+    .top,
+    .filtro-reportes,
+    .acciones-reporte,
+    .top-actions,
+    .mini {
+        display: none !important;
+    }
+
+    .dash,
+    .main,
+    .content-body {
+        height: auto !important;
+        overflow: visible !important;
+    }
+
+    .main {
+        width: 100% !important;
+    }
+
+    .card-large,
+    .card-side,
+    .cardx {
+        box-shadow: none !important;
+        break-inside: avoid;
+    }
+}

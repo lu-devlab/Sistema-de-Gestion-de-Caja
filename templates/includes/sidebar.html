@@ -1,0 +1,38 @@
+<aside class="side">
+    <div class="brand">
+        <span class="brand-text">CajaPulso</span>
+        <small>Cash Control System</small>
+    </div>
+
+    <nav class="nav">
+        <a href="{% url 'apertura:inicio' %}" class="{% if active_module == 'apertura' %}active{% endif %}">
+            <i class="fa-solid fa-unlock-keyhole"></i>
+            <span>Apertura de caja</span>
+        </a>
+        <a href="{% url 'movimientos:inicio' %}" class="{% if active_module == 'movimientos' %}active{% endif %}">
+            <i class="fa-solid fa-arrow-right-arrow-left"></i>
+            <span>Movimientos</span>
+        </a>
+        <a href="{% url 'cierre:inicio' %}" class="{% if active_module == 'cierre' %}active{% endif %}">
+            <i class="fa-solid fa-lock"></i>
+            <span>Cierre diario</span>
+        </a>
+        <a href="{% url 'historial:inicio' %}" class="{% if active_module == 'historial' %}active{% endif %}">
+            <i class="fa-solid fa-clock"></i>
+            <span>Historial diario</span>
+        </a>
+        <a href="{% url 'reportes:inicio' %}" class="{% if active_module == 'reportes' %}active{% endif %}">
+            <i class="fa-solid fa-chart-pie"></i>
+            <span>Reportes</span>
+        </a>
+        <a href="{% url 'configuracion:perfil' %}" class="{% if active_module == 'configuracion' %}active{% endif %}">
+            <i class="fa-solid fa-gears"></i>
+            <span>Configuración</span>
+        </a>
+    </nav>
+
+    <div class="mini">
+        <strong>Soporte CajaPulso</strong>
+        <small>Ayuda operativa y soporte técnico</small>
+    </div>
+</aside>

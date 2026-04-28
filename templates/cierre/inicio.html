@@ -1,0 +1,323 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Cierre diario - CajaPulso{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/apertura.css' %}">
+<link rel="stylesheet" href="{% static 'css/movimientos.css' %}">
+<link rel="stylesheet" href="{% static 'css/cierre.css' %}">
+{% endblock %}
+
+{% block content %}
+<div class="dash">
+    {% include 'includes/sidebar.html' with active_module='cierre' %}
+
+    <main class="main">
+        {% include 'includes/header.html' with header_title="Cierre diario" header_subtitle="" %}
+
+        <div class="content-body">
+            <div class="grid4 resumen-cajas">
+                <div class="cardx">
+                    <div class="label">CAJA DEL DÍA</div>
+                    <div class="value">
+                        {% if caja_hoy %}{{ caja_hoy.estado_caja }}{% else %}Pendiente{% endif %}
+                    </div>
+                    <div class="note">Estado actual de la jornada</div>
+                </div>
+                <div class="cardx">
+                    <div class="label">INGRESOS EFECTIVO</div>
+                    <div class="value">S/ {{ ingresos_efectivo }}</div>
+                    <div class="note">Ingresos que sí entran a caja</div>
+                </div>
+                <div class="cardx">
+                    <div class="label">INGRESOS DIGITALES</div>
+                    <div class="value">S/ {{ ingresos_digitales }}</div>
+                    <div class="note">Yape y otros medios</div>
+                </div>
+                <div class="cardx">
+                    <div class="label">SALDO ESPERADO</div>
+                    <div class="value">S/ {{ saldo_esperado }}</div>
+                    <div class="note">Calculado solo con efectivo</div>
+                </div>
+            </div>
+
+            <div class="grid2 movimientos-grid">
+                <div class="card-large">
+                    <div class="card-header">
+                        <div class="card-title-group">
+                            <span class="label">Registro de cierre diario</span>
+                            <p class="note">
+                                Ingrese el monto real contado al finalizar la jornada.
+                            </p>
+                        </div>
+                    </div>
+
+                    {% if not caja_hoy %}
+                    <div class="chart-area">
+                        <div class="empty-state">
+                            <i class="fa-solid fa-vault"></i>
+                            <p>Primero debe abrir la caja del día</p>
+                        </div>
+                    </div>
+                    {% elif cierre_hoy %}
+                    <div class="resultado-cierre">
+                        <div class="estado-cierre estado-{{ cierre_hoy.estado_cierre|lower }}">
+                            {{ cierre_hoy.estado_cierre }}
+                        </div>
+                        <div class="close-summary mt-4">
+                            <div class="s-row">
+                                <span>HORA DE CIERRE</span>
+                                <b>{{ cierre_hoy.hora_cierre }}</b>
+                            </div>
+                            <div class="s-row mt-2">
+                                <span>SALDO REAL</span>
+                                <b>S/ {{ cierre_hoy.saldo_real }}</b>
+                            </div>
+                            <div class="s-row mt-2">
+                                <span>SALDO REAL DIGITAL</span>
+                                <b>S/ {{ cierre_hoy.saldo_real_digital }}</b>
+                            </div>
+                            <div class="s-row mt-2">
+                                <span>DIFERENCIA</span>
+                                <b>S/ {{ diferencia_visible }}</b>
+                            </div>
+                            <div class="s-row mt-2">
+                                <span>OBSERVACIÓN</span>
+                                <b>{{ cierre_hoy.observacion|default:'Sin observación' }}</b>
+                            </div>
+                            <div class="s-row mt-2">
+                                <span>LÍMITE</span>
+                                <b>
+                                    {% if limite_superado %}
+                                    Superado
+                                    {% else %}
+                                    Dentro del límite
+                                    {% endif %}
+                                </b>
+                            </div>
+                        </div>
+                        <form method="post" class="form-editar-cierre" data-async="si">
+                            {% csrf_token %}
+                            <input type="hidden" name="accion" value="editar">
+                            <div class="mb-3">
+                                <label for="saldo_real_editar" class="form-label">
+                                    Editar saldo real
+                                </label>
+                                <div class="input-group">
+                                    <span class="input-group-text">S/</span>
+                                    <input id="saldo_real_editar" name="saldo_real" type="number" step="0.01" min="0"
+                                        class="form-control" value="{{ cierre_hoy.saldo_real }}" required>
+                                </div>
+                            </div>
+
+                            <div class="mb-3">
+                                <label for="observacion_editar" class="form-label">
+                                    Editar observación
+                                </label>
+                                <textarea id="observacion_editar" name="observacion" rows="3" class="form-control"
+                                    placeholder="Dato opcional">{{ cierre_hoy.observacion }}
+                                </textarea>
+                            </div>
+
+                            <div class="mb-3">
+                                <label for="saldo_real_digital_editar" class="form-label">
+                                    Editar saldo real digital
+                                </label>
+                                <div class="input-group">
+                                    <span class="input-group-text">S/</span>
+                                    <input id="saldo_real_digital_editar" name="saldo_real_digital" type="number"
+                                        step="0.01" min="0" class="form-control"
+                                        value="{{ cierre_hoy.saldo_real_digital }}" required>
+                                </div>
+                            </div>
+
+                            <div class="acciones-formulario">
+                                <button type="submit" class="btn-apertura">
+                                    ACTUALIZAR CIERRE
+                                </button>
+                            </div>
+                        </form>
+                        <form method="post" class="form-eliminar-cierre" data-async="si">
+                            {% csrf_token %}
+                            <input type="hidden" name="accion" value="eliminar">
+                            <button type="submit" class="btn btn-outline-secondary btn-borrar-cierre">
+                                Eliminar cierre
+                            </button>
+                        </form>
+                    </div>
+                    {% else %}
+                    <form method="post" data-async="si">
+                        {% csrf_token %}
+
+                        <div class="grid4 cierre-resumen mb-4">
+                            <div class="cardx">
+                                <div class="label">FECHA</div>
+                                <div class="value">{{ fecha_hoy|date:"d/m/Y" }}</div>
+                                <div class="note">Fecha actual</div>
+                            </div>
+                            <div class="cardx">
+                                <div class="label">HORA</div>
+                                <div class="value">{{ hora_actual }}</div>
+                                <div class="note">Hora actual</div>
+                            </div>
+                            <div class="cardx">
+                                <div class="label">ESTADO</div>
+                                <div class="value">PENDIENTE</div>
+                                <div class="note">Esperando cierre</div>
+                            </div>
+                        </div>
+
+                        <div class="mb-4">
+                            <label for="saldo_real" class="form-label">
+                                Saldo real contado
+                            </label>
+                            <div class="input-group">
+                                <span class="input-group-text">S/</span>
+                                <input id="saldo_real" name="saldo_real" type="number" step="0.01" min="0"
+                                    class="form-control" placeholder="0.00" required>
+                            </div>
+                        </div>
+
+                        <div class="mb-4">
+                            <label for="saldo_real_digital" class="form-label">
+                                Saldo real digital
+                            </label>
+                            <div class="input-group">
+                                <span class="input-group-text">S/</span>
+                                <input id="saldo_real_digital" name="saldo_real_digital" type="number" step="0.01"
+                                    min="0" class="form-control" placeholder="0.00" required>
+                            </div>
+                        </div>
+
+                        <div class="mb-4">
+                            <label for="observacion" class="form-label">
+                                Observación
+                            </label>
+                            <textarea id="observacion" name="observacion" rows="3" class="form-control"
+                                placeholder="Dato opcional"></textarea>
+                        </div>
+
+                        <div class="acciones-formulario">
+                            <button type="submit" class="btn-apertura">
+                                REGISTRAR CIERRE
+                            </button>
+                        </div>
+                    </form>
+                    {% endif %}
+                </div>
+
+                <div class="card-side">
+                    <div class="label">Resumen del cierre</div>
+                    <div class="close-summary mt-4">
+                        <div class="s-row">
+                            <span>FECHA</span>
+                            <b>{{ fecha_hoy|date:"d/m/Y" }}</b>
+                        </div>
+                        <div class="s-row mt-2">
+                            <span>HORA</span>
+                            <b>{{ hora_actual }}</b>
+                        </div>
+                        <div class="s-row mt-2">
+                            <span>CAJA</span>
+                            <b>{% if caja_hoy %}
+                                {{ caja_hoy.estado_caja }}
+                                {% else %}
+                                PENDIENTE
+                                {% endif %}
+                            </b>
+                        </div>
+                        <div class="s-row mt-2">
+                            <span>SALDO ESPERADO</span>
+                            <b>S/ {{ saldo_esperado }}</b>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card-large mt-panel">
+                <div class="card-header">
+                    <div class="card-title-group">
+                        <span class="label">Resultado esperado</span>
+                        <p class="note">
+                            Comparativo general del cierre diario de caja.
+                        </p>
+                    </div>
+                    <div class="acciones-tabla-cierre">
+                        {% if cierre_hoy %}
+                        <a href="#saldo_real_editar" class="accion-ajuste">
+                            Ajustar cierre
+                        </a>
+                        <form method="post" class="form-eliminar-cierre form-eliminar-inline" data-async="si">
+                            {% csrf_token %}
+                            <input type="hidden" name="accion" value="eliminar">
+                            <button type="submit" class="accion-ajuste accion-ajuste-borrar">
+                                Eliminar cierre
+                            </button>
+                        </form>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <div class="tabla-avanzado-wrap">
+                    <table class="tabla-avanzado-cierre">
+                        <thead>
+                            <tr>
+                                <th>Concepto</th>
+                                <th>Monto</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>Monto inicial</td>
+                                <td>
+                                    {% if caja_hoy %}S/ {{ caja_hoy.monto_inicial }}
+                                    {% else %}S/ 0.00{% endif %}
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>Ingresos efectivo</td>
+                                <td>S/ {{ ingresos_efectivo }}</td>
+                            </tr>
+                            <tr>
+                                <td>Ingresos digitales</td>
+                                <td>S/ {{ ingresos_digitales }}</td>
+                            </tr>
+                            <tr>
+                                <td>Egresos efectivo</td>
+                                <td>S/ {{ egresos_efectivo }}</td>
+                            </tr>
+                            <tr>
+                                <td>Egresos digitales</td>
+                                <td>S/ {{ egresos_digitales }}</td>
+                            </tr>
+                            <tr class="fila-total-tabla">
+                                <td>Saldo esperado</td>
+                                <td>S/ {{ saldo_esperado }}</td>
+                            </tr>
+                            <tr>
+                                <td>Saldo digital esperado</td>
+                                <td>S/ {{ saldo_digital_esperado }}</td>
+                            </tr>
+                            <tr>
+                                <td>Limite diferencia</td>
+                                <td>
+                                    S/ {{ limite_diferencia }}
+                                    {% if cierre_hoy %}
+                                    -
+                                    {% if limite_superado %}
+                                    Superado
+                                    {% else %}
+                                    Dentro del límite
+                                    {% endif %}
+                                    {% endif %}
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </main>
+</div>
+{% endblock %}

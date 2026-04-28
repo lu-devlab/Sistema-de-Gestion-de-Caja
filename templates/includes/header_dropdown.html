@@ -1,0 +1,45 @@
+<div id="dropdown-config" class="dropdown-avanzado">
+    <div class="dropdown-header">
+        <span class="label-avanzado">CONFIGURACION</span>
+    </div>
+
+    <div class="dropdown-body">
+        <div class="perfil-info">
+            <div class="perfil-avatar">
+                {% if user.foto_perfil %}
+                <img src="{{ user.foto_perfil.url }}" alt="Avatar">
+                {% else %}
+                <i class="fa-solid fa-circle-user"></i>
+                {% endif %}
+            </div>
+            <div class="perfil-datos">
+                <span class="nombre-usuario text-uppercase">{{ user.nombre }} {{ user.apellido }}</span>
+                <small class="correo-usuario">{{ user.correo }}</small>
+            </div>
+        </div>
+
+        <div class="dropdown-divider"></div>
+
+        <a href="{% url 'configuracion:perfil' %}" class="dropdown-item">
+            <span>Mi perfil</span>
+        </a>
+
+        <a href="{% url 'configuracion:foto' %}" class="dropdown-item">
+            <span>Gestionar foto</span>
+        </a>
+
+        <a href="#" class="dropdown-item">
+            <span>Moneda</span>
+        </a>
+
+        <a href="#" class="dropdown-item">
+            <span>Acceso de la cuenta</span>
+        </a>
+
+        <div class="dropdown-divider"></div>
+
+        <a href="{% url 'usuarios:logout' %}" class="dropdown-item dropdown-logout">
+            <span>Cerrar sesión</span>
+        </a>
+    </div>
+</div>

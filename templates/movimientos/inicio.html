@@ -1,0 +1,287 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Historial diario - CajaPulso{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/apertura.css' %}">
+<link rel="stylesheet" href="{% static 'css/movimientos.css' %}">
+<link rel="stylesheet" href="{% static 'css/cierre.css' %}">
+<link rel="stylesheet" href="{% static 'css/historial.css' %}">
+{% endblock %}
+
+{% block content %}
+<div class="dash">
+    {% include 'includes/sidebar.html' with active_module='movimientos' %}
+
+    <main class="main">
+        {% include 'includes/header.html' with header_title="Historial diario" header_subtitle="Revision de jornadas y
+        detalle operativo" %}
+
+        <div class="content-body">
+            <div class="grid4 resumen-cajas">
+                <div class="cardx">
+                    <div class="label">Fecha</div>
+                    <div class="value">{{ fecha_hoy|date:"d/m/Y" }}</div>
+                    <div class="note">Fecha actual del sistema</div>
+                </div>
+                <div class="cardx">
+                    <div class="label">Hora</div>
+                    <div class="value">{{ hora_actual }}</div>
+                    <div class="note">Hora actual del sistema</div>
+                </div>
+                <div class="cardx">
+                    <div class="label">Jornadas</div>
+                    <div class="value">{{ historial|length }}</div>
+                    <div class="note">Dias registrados en historial</div>
+                </div>
+                <div class="cardx">
+                    <div class="label">Detalle</div>
+                    <div class="value">{% if caja_detalle %}{{ caja_detalle.fecha_caja|date:"d/m/Y" }}{% else %}Sin
+                        datos{% endif %}</div>
+                    <div class="note">Jornada seleccionada</div>
+                </div>
+            </div>
+
+            <div class="grid2 historial-grid">
+                <div class="card-large">
+                    <div class="card-header">
+                        <div class="card-title-group">
+                            <span class="label">Historial de jornadas</span>
+                            <p class="note">Consulte dias anteriores y revise cada jornada.</p>
+                        </div>
+                    </div>
+
+                    <form method="get" class="filtro-historial" data-async="si">
+                        <div class="filtro-grupo">
+                            <label for="fecha" class="filtro-label">Buscar jornada por fecha</label>
+                            <input type="date" id="fecha" name="fecha" value="{{ fecha_seleccionada }}"
+                                class="filtro-input">
+                        </div>
+                        <div class="filtro-acciones">
+                            <button type="submit" class="btn">Consultar dia</button>
+                            <a href="{% url 'historial:inicio' %}" class="btn-avanzado btn-secundario">Ver todo</a>
+                        </div>
+                    </form>
+
+                    {% if historial %}
+                    <div class="tabla-wrap tabla-movimientos">
+                        <table class="tabla-cierre tabla-listado">
+                            <thead>
+                                <tr>
+                                    <th>Fecha</th>
+                                    <th>Apertura</th>
+                                    <th>Ingresos</th>
+                                    <th>Egresos</th>
+                                    <th>Estado</th>
+                                    <th>Cierre</th>
+                                    <th>Diferencia</th>
+                                    <th>Ver</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for item in historial %}
+                                <tr>
+                                    <td>{{ item.caja.fecha_caja|date:"d/m/Y" }}</td>
+                                    <td>S/ {{ item.caja.monto_inicial }}</td>
+                                    <td>S/ {{ item.total_ingresos }}</td>
+                                    <td>S/ {{ item.total_egresos }}</td>
+                                    <td>{{ item.caja.estado_caja }}</td>
+                                    <td>
+                                        {% if item.cierre %}
+                                        {{ item.cierre.estado_cierre }}
+                                        {% else %}
+                                        Sin cierre
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        {% if item.cierre %}
+                                        S/ {{ item.diferencia }}
+                                        {% else %}
+                                        Pendiente
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        <a href="{% url 'historial:inicio' %}?fecha={{ item.caja.fecha_caja|date:'Y-m-d' }}#detalle-historial"
+                                            class="accion-link" data-async-link="si">
+                                            Ver detalle
+                                        </a>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    {% else %}
+                    <div class="chart-area">
+                        <div class="empty-state">
+                            <i class="fa-solid fa-clock-rotate-left"></i>
+                            <p>Todavia no hay jornadas registradas.</p>
+                        </div>
+                    </div>
+                    {% endif %}
+                </div>
+
+                <div class="card-side">
+                    <div class="label">Resumen del detalle</div>
+                    <div class="close-summary mt-4">
+                        <div class="s-row">
+                            <span>Apertura</span>
+                            <b>{% if caja_detalle %}S/ {{ caja_detalle.monto_inicial }}{% else %}S/ 0.00{% endif %}</b>
+                        </div>
+                        <div class="s-row">
+                            <span>Ingresos</span>
+                            <b>S/ {{ total_ingresos_detalle }}</b>
+                        </div>
+                        <div class="s-row">
+                            <span>Egresos</span>
+                            <b>S/ {{ total_egresos_detalle }}</b>
+                        </div>
+                        <div class="s-row">
+                            <span>Cierre</span>
+                            <b>
+                                {% if cierre_detalle %}
+                                {{ cierre_detalle.estado_cierre }}
+                                {% else %}
+                                Pendiente
+                                {% endif %}
+                            </b>
+                        </div>
+                        <div class="s-row">
+                            <span>Diferencia</span>
+                            <b>S/ {{ diferencia_detalle }}</b>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div id="detalle-historial" class="card-large mt-panel">
+                <div class="card-header">
+                    <div class="card-title-group">
+                        <span class="label">Detalle de la jornada</span>
+                        <p class="note">Apertura, movimientos y cierre del dia seleccionado.</p>
+                    </div>
+                </div>
+
+                {% if caja_detalle %}
+                <div class="detalle-historial-grid">
+                    <div class="detalle-columna">
+                        <h3 class="subtitulo-panel">Apertura</h3>
+                        <div class="close-summary">
+                            <div class="s-row">
+                                <span>Fecha</span>
+                                <b>{{ caja_detalle.fecha_caja|date:"d/m/Y" }}</b>
+                            </div>
+                            <div class="s-row">
+                                <span>Hora</span>
+                                <b>{{ caja_detalle.hora_apertura }}</b>
+                            </div>
+                            <div class="s-row">
+                                <span>Monto inicial</span>
+                                <b>S/ {{ caja_detalle.monto_inicial }}</b>
+                            </div>
+                            <div class="s-row">
+                                <span>Estado</span>
+                                <b>{{ caja_detalle.estado_caja }}</b>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="detalle-columna">
+                        <h3 class="subtitulo-panel">Cierre</h3>
+                        {% if cierre_detalle %}
+                        <div class="close-summary">
+                            <div class="s-row">
+                                <span>Estado</span>
+                                <b>{{ cierre_detalle.estado_cierre }}</b>
+                            </div>
+                            <div class="s-row">
+                                <span>Saldo real</span>
+                                <b>S/ {{ cierre_detalle.saldo_real }}</b>
+                            </div>
+                            <div class="s-row">
+                                <span>Saldo digital</span>
+                                <b>S/ {{ cierre_detalle.saldo_real_digital }}</b>
+                            </div>
+                            <div class="s-row">
+                                <span>Diferencia</span>
+                                <b>S/ {{ diferencia_detalle }}</b>
+                            </div>
+                        </div>
+                        {% else %}
+                        <div class="chart-area historial-vacio">
+                            <div class="empty-state">
+                                <i class="fa-solid fa-cash-register"></i>
+                                <p>Esta jornada no tiene cierre registrado.</p>
+                            </div>
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <div class="resumen-jornada mt-panel">
+                    <div class="resumen-item">
+                        <span class="resumen-label">Apertura del dia</span>
+                        <strong>S/ {{ caja_detalle.monto_inicial }}</strong>
+                    </div>
+                    <div class="resumen-item">
+                        <span class="resumen-label">Movimientos del dia</span>
+                        <strong>{{ movimientos_detalle|length }}</strong>
+                    </div>
+                    <div class="resumen-item">
+                        <span class="resumen-label">Cierre del dia</span>
+                        <strong>
+                            {% if cierre_detalle %}
+                            {{ cierre_detalle.estado_cierre }}
+                            {% else %}
+                            Pendiente
+                            {% endif %}
+                        </strong>
+                    </div>
+                    <div class="resumen-item">
+                        <span class="resumen-label">Diferencia encontrada</span>
+                        <strong>S/ {{ diferencia_detalle }}</strong>
+                    </div>
+                </div>
+
+                <div class="tabla-avanzado-wrap tabla-avanzado-movimientos mt-panel">
+                    <table class="tabla-avanzado-cierre tabla-avanzado-listado">
+                        <thead>
+                            <tr>
+                                <th>Hora</th>
+                                <th>Tipo</th>
+                                <th>Descripcion</th>
+                                <th>Monto</th>
+                                <th>Medio</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for movimiento in movimientos_detalle %}
+                            <tr>
+                                <td>{{ movimiento.hora_movimiento }}</td>
+                                <td>{{ movimiento.tipo_movimiento }}</td>
+                                <td>{{ movimiento.descripcion }}</td>
+                                <td>S/ {{ movimiento.monto }}</td>
+                                <td>{{ movimiento.medio_pago }}</td>
+                            </tr>
+                            {% empty %}
+                            <tr>
+                                <td colspan="5">No hay movimientos registrados en esta jornada.</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                {% else %}
+                <div class="chart-area">
+                    <div class="empty-state">
+                        <i class="fa-solid fa-folder-open"></i>
+                        <p>No hay detalle disponible todavia.</p>
+                    </div>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </main>
+</div>
+{% endblock %}

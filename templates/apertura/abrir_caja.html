@@ -1,0 +1,113 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Registrar apertura - CajaPulso{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/apertura.css' %}">
+{% endblock %}
+
+{% block content %}
+<div class="dash">
+    {% include 'includes/sidebar.html' with active_module='apertura' %}
+
+    <main class="main">
+        {% include 'includes/header.html' with header_title="Registrar apertura" header_subtitle="" %}
+
+        <div class="content-body">
+            <div class="grid2">
+                <div class="card-large">
+                    <div class="card-header">
+                        <div class="card-title-group">
+                            <span class="label">Datos de apertura</span>
+                            <p class="note">
+                                Registre la información inicial de la jornada
+                            </p>
+                        </div>
+                    </div>
+
+                    <form method="post" data-async="si">
+                        {% csrf_token %}
+
+                        <div class="grid4 mb-4">
+                            <div class="cardx">
+                                <i class="fa-solid fa-calendar-day"></i>
+                                <div>
+                                    <div class="label">FECHA</div>
+                                    <div class="value">{{ fecha_hoy }}</div>
+                                    <div class="note">Automática</div>
+                                </div>
+                            </div>
+                            <div class="cardx">
+                                <i class="fa-solid fa-clock"></i>
+                                <div>
+                                    <div class="label">HORA</div>
+                                    <div class="value">{{ hora_actual }}</div>
+                                    <div class="note">Actual</div>
+                                </div>
+                            </div>
+                            <div class="cardx">
+                                <i class="fa-solid fa-hourglass-half"></i>
+                                <div>
+                                    <div class="label">ESTADO</div>
+                                    <div class="value">PENDIENTE</div>
+                                    <div class="note">En espera</div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="mb-4">
+                            <label for="monto_inicial" class="form-label">
+                                Monto inicial
+                            </label>
+                            <div class="input-group">
+                                <span class="input-group-text">S/</span>
+                                <input id="monto_inicial" name="monto_inicial" type="number" step="0.01" min="0"
+                                    class="form-control" placeholder="0.00" required autofocus>
+                            </div>
+                            <small class="text-muted d-block mt-2">
+                                Debe coincidir con el efectivo físico al iniciar
+                            </small>
+                        </div>
+
+                        <div class="mb-4">
+                            <label for="observacion" class="form-label">
+                                Observación
+                            </label>
+                            <textarea id="observacion" name="observacion" rows="3" class="form-control"
+                                placeholder="Dato opcional"></textarea>
+                        </div>
+
+                        <div class="d-flex gap-2">
+                            <button type="submit" class="btn-apertura">
+                                CONFIRMAR APERTURA
+                            </button>
+                            <a href="{% url 'apertura:inicio' %}" class="btn btn-outline-secondary">
+                                Cancelar
+                            </a>
+                        </div>
+                    </form>
+                </div>
+
+                <div class="card-side">
+                    <div class="label mb-3">RESUMEN</div>
+                    <div class="close-summary">
+                        <div class="s-row">
+                            <span>MÓDULO</span>
+                            <b>Apertura de caja</b>
+                        </div>
+                        <div class="s-row">
+                            <span>FECHA</span>
+                            <b>{{ fecha_hoy }}</b>
+                        </div>
+                        <div class="s-row">
+                            <span>ACCIÓN</span>
+                            <b>Registrar jornada</b>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+</div>
+{% endblock %}

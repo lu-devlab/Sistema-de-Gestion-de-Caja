@@ -1,0 +1,315 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Consultas y reportes - CajaPulso{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/apertura.css' %}">
+<link rel="stylesheet" href="{% static 'css/movimientos.css' %}">
+<link rel="stylesheet" href="{% static 'css/cierre.css' %}">
+<link rel="stylesheet" href="{% static 'css/historial.css' %}">
+<link rel="stylesheet" href="{% static 'css/reportes.css' %}">
+{% endblock %}
+
+{% block content %}
+<div class="dash">
+    {% include 'includes/sidebar.html' with active_module='reportes' %}
+
+    <main class="main">
+        {% include 'includes/header.html' with header_title="Bienvenido" header_subtitle="" %}
+
+        <div class="content-body">
+            <div class="grid4 resumen-cajas">
+                <div class="cardx">
+                    <div class="label">PERIODO</div>
+                    <div class="value">{{ nombre_periodo }}</div>
+                    <div class="note">Consulta activa del modulo</div>
+                </div>
+                <div class="cardx">
+                    <div class="label">RANGO</div>
+                    <div class="value">{{ fecha_resumen }}</div>
+                    <div class="note">Fechas del reporte actual</div>
+                </div>
+                <div class="cardx">
+                    <div class="label">JORNADAS</div>
+                    <div class="value">{{ jornadas|length }}</div>
+                    <div class="note">Dias encontrados en el periodo</div>
+                </div>
+                <div class="cardx">
+                    <div class="label">HORA</div>
+                    <div class="value">{{ hora_actual }}</div>
+                    <div class="note">{{ fecha_hoy|date:"d/m/Y" }}</div>
+                </div>
+            </div>
+
+            <div class="grid2 reportes-grid">
+                <div class="card-large">
+                    <div class="card-header">
+                        <div class="card-title-group">
+                            <span class="label">Consulta por periodo</span>
+                            <p class="note">
+                                Revise caja diaria por día, semana, mes,
+                                Año o rango de fechas.
+                            </p>
+                        </div>
+                        <div class="acciones-reporte">
+                            <button type="button" class="btn-avanzado btn-secundario btn-pdf" data-exportar-pdf="si">
+                                Exportar PDF
+                            </button>
+                        </div>
+                    </div>
+
+                    <form method="get" class="filtro-reportes" data-async="si">
+                        <div class="filtro-bloque">
+                            <label for="periodo" class="filtro-label">
+                                Tipo de periodo
+                            </label>
+                            <select id="periodo" name="periodo" class="filtro-input">
+                                <option value="dia" {% if tipo_periodo == 'dia' %} selected {% endif %}>Día</option>
+                                <option value="semana" {% if tipo_periodo == 'semana' %} selected {% endif %}>Semana
+                                </option>
+                                <option value="mes" {% if tipo_periodo == 'mes' %} selected {% endif %}>Mes</option>
+                                <option value="anio" {% if tipo_periodo == 'anio' %} selected {% endif %}>Año</option>
+                                <option value="rango" {% if tipo_periodo == 'rango' %} selected {% endif %}>Rango</option>
+                            </select>
+                        </div>
+
+                        <div class="filtro-bloque">
+                            <label for="fecha" class="filtro-label">
+                                Fecha base
+                            </label>
+                            <input type="date" id="fecha" name="fecha" value="{{ fecha_texto }}" class="filtro-input">
+                        </div>
+
+                        <div class="filtro-bloque">
+                            <label for="desde" class="filtro-label">
+                                Desde
+                            </label>
+                            <input type="date" id="desde" name="desde" value="{{ desde_texto }}" class="filtro-input">
+                        </div>
+
+                        <div class="filtro-bloque">
+                            <label for="hasta" class="filtro-label">
+                                Hasta
+                            </label>
+                            <input type="date" id="hasta" name="hasta" value="{{ hasta_texto }}" class="filtro-input">
+                        </div>
+
+                        <div class="filtro-acciones filtro-acciones-reportes">
+                            <button type="submit" class="btn-avanzado">
+                                Consultar
+                            </button>
+                            <a href="{% url 'reportes:inicio' %}" class="btn-avanzado btn-secundario">
+                                Limpiar
+                            </a>
+                        </div>
+                    </form>
+
+                    {% if jornadas %}
+                    <div class="tabla-avanzado-wrap tabla-avanzado-movimientos">
+                        <table class="tabla-avanzado-cierre tabla-avanzado-listado">
+                            <thead>
+                                <tr>
+                                    <th>Fecha</th>
+                                    <th>Apertura</th>
+                                    <th>Ingresos</th>
+                                    <th>Egresos</th>
+                                    <th>Saldo neto</th>
+                                    <th>Cierre</th>
+                                    <th>Diferencia</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for item in jornadas %}
+                                <tr>
+                                    <td>{{ item.caja.fecha_caja|date:"d/m/Y" }}</td>
+                                    <td>S/ {{ item.caja.monto_inicial }}</td>
+                                    <td>S/ {{ item.total_ingresos }}</td>
+                                    <td>S/ {{ item.total_egresos }}</td>
+                                    <td>S/ {{ item.saldo_neto }}</td>
+                                    <td>
+                                        {% if item.cierre %}
+                                        {{ item.cierre.estado_cierre }}
+                                        {% else %}
+                                        Sin cierre
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        {% if item.cierre %}
+                                        S/ {{ item.diferencia }}
+                                        {% else %}
+                                        Pendiente
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    {% else %}
+                    <div class="chart-area">
+                        <div class="empty-state">
+                            <i class="fa-solid fa-folder-open"></i>
+                            <p>No hay jornadas en el periodo consultado</p>
+                        </div>
+                    </div>
+                    {% endif %}
+                </div>
+
+                <div class="card-side">
+                    <div class="label">Resumen del reporte</div>
+                    <div class="close-summary mt-4">
+                        <div class="s-row">
+                            <span>APERTURA</span>
+                            <b>S/ {{ total_apertura }}</b>
+                        </div>
+                        <div class="s-row mt-2">
+                            <span>INGRESOS</span>
+                            <b>S/ {{ total_ingresos }}</b>
+                        </div>
+                        <div class="s-row mt-2">
+                            <span>EGRESOS</span>
+                            <b>S/ {{ total_egresos }}</b>
+                        </div>
+                        <div class="s-row mt-2">
+                            <span>SALDO NETO</span>
+                            <b>S/ {{ saldo_neto }}</b>
+                        </div>
+                        <div class="s-row mt-2">
+                            <span>DIFERENCIAS</span>
+                            <b>S/ {{ total_diferencia }}</b>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card-large mt-panel">
+                <div class="card-header">
+                    <div class="card-title-group">
+                        <span class="label">Reporte simple del periodo</span>
+                        <p class="note">
+                            Resumen general para control diario, semanal,
+                            mensual o anual
+                        </p>
+                    </div>
+                </div>
+
+                <div class="tabla-avanzado-wrap">
+                    <table class="tabla-avanzado-cierre">
+                        <thead>
+                            <tr>
+                                <th>Concepto</th>
+                                <th>Monto</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>Periodo consultado</td>
+                                <td>{{ nombre_periodo }}</td>
+                            </tr>
+                            <tr>
+                                <td>Rango de fechas</td>
+                                <td>{{ fecha_resumen }}</td>
+                            </tr>
+                            <tr>
+                                <td>Total apertura</td>
+                                <td>S/ {{ total_apertura }}</td>
+                            </tr>
+                            <tr>
+                                <td>Total ingresos</td>
+                                <td>S/ {{ total_ingresos }}</td>
+                            </tr>
+                            <tr>
+                                <td>Total egresos</td>
+                                <td>S/ {{ total_egresos }}</td>
+                            </tr>
+                            <tr class="fila-total-tabla">
+                                <td>Saldo neto</td>
+                                <td>S/ {{ saldo_neto }}</td>
+                            </tr>
+                            <tr>
+                                <td>Diferencias encontradas</td>
+                                <td>S/ {{ total_diferencia }}</td>
+                            </tr>
+                            <tr>
+                                <td>Jornadas revisadas</td>
+                                <td>{{ jornadas|length }}</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                {% if detalle_jornada %}
+                <div class="resumen-jornada mt-panel">
+                    <div class="resumen-item">
+                        <span class="resumen-label">Ultima jornada</span>
+                        <strong>
+                            {{ detalle_jornada.caja.fecha_caja|date:"d/m/Y" }}
+                        </strong>
+                    </div>
+                    <div class="resumen-item">
+                        <span class="resumen-label">Movimientos</span>
+                        <strong>{{ detalle_jornada.movimientos|length }}</strong>
+                    </div>
+                    <div class="resumen-item">
+                        <span class="resumen-label">Estado cierre</span>
+                        <strong>
+                            {% if detalle_jornada.cierre %}
+                            {{ detalle_jornada.cierre.estado_cierre }}
+                            {% else %}
+                            Sin cierre
+                            {% endif %}
+                        </strong>
+                    </div>
+                    <div class="resumen-item">
+                        <span class="resumen-label">Diferencia</span>
+                        <strong>S/ {{ detalle_jornada.diferencia }}</strong>
+                    </div>
+                </div>
+                {% endif %}
+            </div>
+
+            <div class="grid2 reportes-grid mt-panel">
+                <div class="card-large">
+                    <div class="card-header">
+                        <div class="card-title-group">
+                            <span class="label">Grafico del periodo</span>
+                            <p class="note">
+                                Comparativo visual de ingresos, egresos
+                                y saldo neto.
+                            </p>
+                        </div>
+                    </div>
+                    <div class="grafico-panel">
+                        <canvas id="grafico-periodo"></canvas>
+                    </div>
+                </div>
+
+                <div class="card-large">
+                    <div class="card-header">
+                        <div class="card-title-group">
+                            <span class="label">Estado de cierres</span>
+                            <p class="note">
+                                Distribución de jornadas cuadradas,
+                                faltantes y sobrantes.
+                            </p>
+                        </div>
+                    </div>
+                    <div class="grafico-panel">
+                        <canvas id="grafico-cierres"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+</div>
+{{ grafico_fechas|json_script:"grafico-fechas" }}
+{{ grafico_ingresos|json_script:"grafico-ingresos" }}
+{{ grafico_egresos|json_script:"grafico-egresos" }}
+{{ grafico_saldos|json_script:"grafico-saldos" }}
+{{ grafico_estados|json_script:"grafico-estados" }}
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+{% endblock %}

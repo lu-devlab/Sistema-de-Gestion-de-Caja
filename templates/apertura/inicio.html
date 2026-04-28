@@ -1,0 +1,148 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Apertura de caja - CajaPulso{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/apertura.css' %}">
+{% endblock %}
+
+{% block content %}
+<div class="dash">
+    {% include 'includes/sidebar.html' with active_module='apertura' %}
+
+    <main class="main">
+        {% include 'includes/header.html' with header_title="Apertura de caja" header_subtitle="" %}
+
+        <div class="content-body">
+            <div id="resumen-apertura" class="grid4 resumen-cajas">
+                <div class="cardx">
+                    <i class="fa-solid {% if caja_hoy %}fa-circle-check{% else %}fa-clock{% endif %}"></i>
+                    <div>
+                        <div class="label">ESTADO</div>
+                        <div class="value">
+                            {% if caja_hoy %}ABIERTA{% else %}Pendiente{% endif %}
+                        </div>
+                        <div class="note">Estado de caja</div>
+                    </div>
+                </div>
+                <div class="cardx">
+                    <i class="fa-solid fa-money-bill-wave"></i>
+                    <div>
+                        <div class="label">MONTO INICIAL</div>
+                        <div class="value">
+                            {% if caja_hoy %}S/ {{ caja_hoy.monto_inicial }}{% else %}S/ 0.00{% endif %}
+                        </div>
+                        <div class="note">Monto base</div>
+                    </div>
+                </div>
+                <div class="cardx">
+                    <i class="fa-solid fa-clipboard-list"></i>
+                    <div>
+                        <div class="label">REGISTRO</div>
+                        <div class="value">
+                            {% if caja_hoy %}COMPLETO{% else %}EN ESPERA{% endif %}
+                        </div>
+                        <div class="note">Seguimiento diario</div>
+                    </div>
+                </div>
+                <div class="cardx">
+                    <i class="fa-solid fa-hourglass-half"></i>
+                    <div>
+                        <div class="label">HORA</div>
+                        <div class="value">{{ hora_actual }}</div>
+                        <div class="note">{{ fecha_hoy|date:"d/m/Y" }}</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="grid2">
+                <div class="card-large">
+                    <div class="card-header border-0 pb-0">
+                        <div class="card-title-group">
+                            <span class="label">RESUMEN DE APERTURA</span>
+                            <p class="note">
+                                Detalles del registro inicial de la caja diaria.
+                            </p>
+                        </div>
+                    </div>
+
+                    {% if caja_hoy %}
+                    <div class="close-summary mt-3">
+                        <div class="s-row">
+                            <span>FECHA</span>
+                            <b>{{ caja_hoy.fecha_caja }}</b>
+                        </div>
+                        <div class="s-row">
+                            <span>HORA DE APERTURA</span>
+                            <b>{{ caja_hoy.hora_apertura }}</b>
+                        </div>
+                        <div class="s-row">
+                            <span>MONTO INICIAL</span>
+                            <b>S/ {{ caja_hoy.monto_inicial }}</b>
+                        </div>
+                        <div class="s-row border-0">
+                            <span>OBSERVACIÓN</span>
+                            <b>{{ caja_hoy.observacion|default:'Sin observación' }}</b>
+                        </div>
+                        <form method="post" class="form-actualizar-monto mt-4" data-async="si">
+                            {% csrf_token %}
+                            <label for="monto_inicial_actualizar" class="form-label">
+                                Actualizar monto inicial
+                            </label>
+                            <div class="input-group">
+                                <span class="input-group-text">S/</span>
+                                <input id="monto_inicial_actualizar" name="monto_inicial" type="number" step="0.01"
+                                    min="0" value="{{ caja_hoy.monto_inicial }}" class="form-control" required>
+                            </div>
+                            <button type="submit" class="btn-apertura mt-3">
+                                ACTUALIZAR MONTO
+                            </button>
+                        </form>
+                    </div>
+                    {% else %}
+                    <div class="chart-area mt-4">
+                        <div class="empty-state">
+                            <i class="fa-solid fa-vault"></i>
+                            <p class="mb-0">Aún no se ha registrado la apertura del día</p>
+                        </div>
+                    </div>
+                    {% endif %}
+                </div>
+
+                <div class="card-side">
+                    <div class="label mb-3">GESTIÓN OPERATIVA</div>
+                    <div class="close-summary">
+                        {% if caja_hoy %}
+                        <div class="s-row">
+                            <span>ESTADO</span>
+                            <b class="text-success">Caja abierta</b>
+                        </div>
+                        <div class="s-row">
+                            <span>DISPONIBILIDAD</span>
+                            <b>Lista para transacciones</b>
+                        </div>
+                        <button class="btn-apertura mt-4" disabled>
+                            APERTURA REGISTRADA
+                        </button>
+                        {% else %}
+                        <div class="s-row">
+                            <span>ESTADO</span>
+                            <b class="text-warning">Pendiente</b>
+                        </div>
+                        <div class="s-row">
+                            <span>ACCIÓN</span>
+                            <b>Registrar inicio</b>
+                        </div>
+                        <a href="{% url 'apertura:abrir_caja' %}"
+                            class="btn-apertura mt-4 text-decoration-none d-inline-flex justify-content-center align-items-center">
+                            INICIAR APERTURA DE CAJA
+                        </a>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+</div>
+{% endblock %}

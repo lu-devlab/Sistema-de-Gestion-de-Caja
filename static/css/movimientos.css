@@ -1,0 +1,151 @@
+/* Estilos Especificos - Movimientos de Caja */
+
+.movimientos-grid {
+    align-items: start;
+}
+
+.mt-panel {
+    margin-top: 18px;
+}
+
+.form-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+    margin-bottom: 18px;
+}
+
+.field-box {
+    display: grid;
+}
+
+.campo-avanzado {
+    min-height: 54px;
+    border: 1px solid rgba(21, 81, 58, 0.10);
+    border-radius: 16px;
+    background: rgba(248, 252, 249, 0.94);
+    color: #113426;
+    box-shadow: none;
+    background-image:
+        linear-gradient(45deg, transparent 50%, #2f7d5a 50%),
+        linear-gradient(135deg, #2f7d5a 50%, transparent 50%);
+    background-position:
+        calc(100% - 18px) calc(50% - 3px),
+        calc(100% - 12px) calc(50% - 3px);
+    background-size: 6px 6px, 6px 6px;
+    background-repeat: no-repeat;
+}
+
+.campo-avanzado:focus {
+    border-color: rgba(17, 122, 86, 0.28);
+    box-shadow: 0 0 0 0.18rem rgba(38, 145, 103, 0.10);
+}
+
+.acciones-formulario {
+    display: flex;
+    gap: 12px;
+    align-items: center;
+}
+
+.tabla-avanzado-movimientos {
+    background: linear-gradient(180deg, #f4fbf7, #e7f3ec);
+    box-shadow: 0 16px 30px rgba(20, 77, 53, 0.10);
+}
+
+.tabla-avanzado-listado thead th {
+    background: rgba(86, 138, 111, 0.18);
+    color: #234636;
+    padding: 18px 22px;
+}
+
+.tabla-avanzado-listado tbody td {
+    color: #173b2d;
+    border-top: 1px solid rgba(18, 73, 50, 0.12);
+    padding: 18px 22px;
+    vertical-align: middle;
+}
+
+.tipo-ingreso {
+    background: #e9f8f0;
+    color: #18724d;
+}
+
+.tipo-egreso {
+    background: #fcecef;
+    color: #ae546b;
+}
+
+.acciones-tabla {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    flex-wrap: nowrap;
+}
+
+.accion-link,
+.accion-borrar {
+    font-size: 0.82rem;
+    font-weight: 700;
+    text-decoration: none;
+    border: 0;
+    background: transparent;
+    padding: 0;
+}
+
+.accion-link {
+    color: #20553f;
+}
+
+.accion-borrar {
+    color: #b14f68;
+}
+
+.tipo-texto {
+    display: inline-block;
+    font-size: 0.78rem;
+    font-weight: 800;
+    letter-spacing: 0.08em;
+}
+
+.tipo-texto.tipo-ingreso {
+    color: #1d7a53;
+}
+
+.tipo-texto.tipo-egreso {
+    color: #b14f68;
+}
+
+@media (max-width: 1100px) {
+    .tabla-avanzado-listado thead {
+        display: none;
+    }
+
+    .tabla-avanzado-listado,
+    .tabla-avanzado-listado tbody,
+    .tabla-avanzado-listado tr,
+    .tabla-avanzado-listado td {
+        display: block;
+        width: 100%;
+    }
+
+    .tabla-avanzado-listado tbody tr {
+        padding: 10px 0;
+        border-top: 1px solid rgba(18, 73, 50, 0.10);
+    }
+
+    .tabla-avanzado-listado tbody td {
+        text-align: left !important;
+        padding: 10px 16px;
+        border-left: 0 !important;
+    }
+}
+
+@media (max-width: 860px) {
+
+    .form-grid,
+    .acciones-formulario {
+        grid-template-columns: 1fr;
+        flex-direction: column;
+        align-items: stretch;
+    }
+}
