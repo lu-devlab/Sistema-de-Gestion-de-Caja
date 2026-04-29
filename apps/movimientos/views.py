@@ -1,5 +1,6 @@
 from decimal import Decimal, InvalidOperation
 
+from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse
@@ -8,6 +9,7 @@ from django.utils import timezone
 from apertura.models import CajaDiaria
 from configuracion.models import Configuracion
 
+from .calculos import obtener_totales_caja
 from .models import CategoriaMovimiento, MovimientoCaja
 
 MEDIOS_PAGO = [
@@ -23,12 +25,25 @@ def obtener_configuracion(usuario):
     return Configuracion.objects.filter(usuario=usuario).first()
 
 
-def obtener_caja_abierta(usuario, fecha_hoy):
+def obtener_caja_dia(usuario, fecha_hoy):
     return CajaDiaria.objects.filter(
         usuario=usuario,
         fecha_caja=fecha_hoy,
-        estado_caja='ABIERTA',
     ).first()
+
+
+def obtener_estado_caja(caja):
+    if not caja:
+        return ''
+    return (caja.estado_caja or '').strip().upper()
+
+
+def caja_esta_abierta(caja):
+    return obtener_estado_caja(caja) == 'ABIERTA'
+
+
+def caja_esta_cerrada(caja):
+    return obtener_estado_caja(caja) == 'CERRADA'
 
 
 def obtener_categoria(tipo_movimiento):
@@ -51,11 +66,47 @@ def url_editar_movimiento(movimiento_id):
     )
 
 
+def calcular_saldo_disponible(caja, movimiento_omitido=None):
+    saldo_disponible = obtener_totales_caja(caja)['saldo_esperado']
+
+    if movimiento_omitido:
+        if movimiento_omitido.tipo_movimiento == 'INGRESO':
+            saldo_disponible -= movimiento_omitido.monto
+        else:
+            saldo_disponible += movimiento_omitido.monto
+
+    return saldo_disponible
+
+
+def validar_egreso_disponible(request, caja, tipo_movimiento, monto, movimiento=None):
+    if tipo_movimiento != 'EGRESO':
+        return True
+
+    saldo_disponible = calcular_saldo_disponible(
+        caja,
+        movimiento_omitido=movimiento,
+    )
+
+    if monto <= saldo_disponible:
+        return True
+
+    messages.error(
+        request,
+        (
+            'Ojo: estas registrando un egreso mayor al saldo disponible. '
+            f'Disponible: {saldo_disponible:.2f}. No se registro el movimiento.'
+        ),
+    )
+    return False
+
+
 @login_required
 def inicio(request):
     hoy = timezone.localdate()
     hora_actual = timezone.localtime().strftime('%H:%M')
-    caja_hoy = obtener_caja_abierta(request.user, hoy)
+    caja_dia = obtener_caja_dia(request.user, hoy)
+    caja_hoy = caja_dia if caja_esta_abierta(caja_dia) else None
+    caja_cerrada = caja_esta_cerrada(caja_dia)
     configuracion = obtener_configuracion(request.user)
     movimiento_editar = None
 
@@ -68,51 +119,78 @@ def inicio(request):
 
     editar_id = request.GET.get('editar', '').strip()
 
-    if editar_id:
+    if editar_id and caja_hoy:
         movimiento_editar = get_object_or_404(
             MovimientoCaja,
             id_movimiento=editar_id,
             usuario=request.user,
+            caja=caja_hoy,
         )
 
     if request.method == 'POST':
         accion = request.POST.get('accion', 'registrar')
 
         if not caja_hoy:
+            if caja_cerrada:
+                messages.error(
+                    request,
+                    'La caja del dia ya esta cerrada. No se pueden registrar movimientos.',
+                )
+            else:
+                messages.error(
+                    request,
+                    'Primero debe abrir la caja para registrar movimientos.',
+                )
             return redirect('movimientos:inicio')
 
         if accion == 'registrar':
             return registrar_movimiento(request, caja_hoy)
 
         if accion == 'editar':
-            return editar_movimiento(request, permite_editar)
+            return editar_movimiento(request, permite_editar, caja_hoy)
 
         if accion == 'eliminar':
-            return eliminar_movimiento(request, permite_eliminar)
-
-    movimientos_hoy = MovimientoCaja.objects.filter(
-        usuario=request.user,
-        fecha_movimiento=hoy,
-    ).order_by('-hora_movimiento', '-id_movimiento')
+            return eliminar_movimiento(request, permite_eliminar, caja_hoy)
 
     total_ingresos = Decimal('0.00')
     total_egresos = Decimal('0.00')
-    total_efectivo = Decimal('0.00')
-    total_digital = Decimal('0.00')
+    saldo_efectivo = Decimal('0.00')
+    saldo_digital = Decimal('0.00')
+    movimiento_efectivo = Decimal('0.00')
+    movimiento_digital = Decimal('0.00')
+    saldo_movimientos = Decimal('0.00')
+    saldo_total = Decimal('0.00')
+    saldo_disponible_form = Decimal('0.00')
 
-    for movimiento in movimientos_hoy:
-        if movimiento.tipo_movimiento == 'INGRESO':
-            total_ingresos += movimiento.monto
-        else:
-            total_egresos += movimiento.monto
+    if caja_dia:
+        totales = obtener_totales_caja(
+            caja_dia,
+            incluir_movimientos=True,
+            ordenar=True,
+        )
+        movimientos_hoy = totales['movimientos']
+        total_ingresos = totales['total_ingresos']
+        total_egresos = totales['total_egresos']
+        saldo_efectivo = totales['saldo_efectivo_esperado']
+        saldo_digital = totales['saldo_digital_esperado']
+        movimiento_efectivo = totales['movimiento_efectivo']
+        movimiento_digital = totales['movimiento_digital']
+        saldo_movimientos = totales['saldo_movimientos']
+        saldo_total = totales['saldo_esperado']
+        saldo_disponible_form = saldo_total
+    else:
+        movimientos_hoy = MovimientoCaja.objects.none()
 
-        if movimiento.medio_pago == 'EFECTIVO':
-            total_efectivo += movimiento.monto
-        else:
-            total_digital += movimiento.monto
+    if caja_dia and movimiento_editar:
+        saldo_disponible_form = calcular_saldo_disponible(
+            caja_dia,
+            movimiento_omitido=movimiento_editar,
+        )
 
     contexto = {
         'caja_hoy': caja_hoy,
+        'caja_dia': caja_dia,
+        'caja_cerrada': caja_cerrada,
         'fecha_hoy': hoy,
         'hora_actual': hora_actual,
         'movimientos_hoy': movimientos_hoy,
@@ -122,9 +200,13 @@ def inicio(request):
         'medios_pago': MEDIOS_PAGO,
         'total_ingresos': total_ingresos,
         'total_egresos': total_egresos,
-        'saldo_movimientos': total_ingresos - total_egresos,
-        'total_efectivo': total_efectivo,
-        'total_digital': total_digital,
+        'saldo_movimientos': saldo_movimientos,
+        'saldo_total': saldo_total,
+        'saldo_disponible_form': saldo_disponible_form,
+        'total_efectivo': saldo_efectivo,
+        'total_digital': saldo_digital,
+        'movimiento_efectivo': movimiento_efectivo,
+        'movimiento_digital': movimiento_digital,
     }
     return render(request, 'movimientos/inicio.html', contexto)
 
@@ -152,6 +234,14 @@ def registrar_movimiento(request, caja_hoy):
     if monto <= 0:
         return redirect('movimientos:inicio')
 
+    if not validar_egreso_disponible(
+        request,
+        caja_hoy,
+        tipo_movimiento,
+        monto,
+    ):
+        return redirect('movimientos:inicio')
+
     ahora = timezone.localtime()
     categoria = obtener_categoria(tipo_movimiento)
 
@@ -170,7 +260,7 @@ def registrar_movimiento(request, caja_hoy):
     return redirect('movimientos:inicio')
 
 
-def editar_movimiento(request, permite_editar):
+def editar_movimiento(request, permite_editar, caja_hoy):
     if not permite_editar:
         return redirect('movimientos:inicio')
 
@@ -178,6 +268,7 @@ def editar_movimiento(request, permite_editar):
         MovimientoCaja,
         id_movimiento=request.POST.get('id_movimiento'),
         usuario=request.user,
+        caja=caja_hoy,
     )
 
     tipo_movimiento = request.POST.get('tipo_movimiento', '').strip()
@@ -202,6 +293,15 @@ def editar_movimiento(request, permite_editar):
     if monto <= 0:
         return redirect(url_editar_movimiento(movimiento.id_movimiento))
 
+    if not validar_egreso_disponible(
+        request,
+        caja_hoy,
+        tipo_movimiento,
+        monto,
+        movimiento=movimiento,
+    ):
+        return redirect(url_editar_movimiento(movimiento.id_movimiento))
+
     movimiento.tipo_movimiento = tipo_movimiento
     movimiento.categoria = obtener_categoria(tipo_movimiento)
     movimiento.medio_pago = medio_pago
@@ -220,7 +320,7 @@ def editar_movimiento(request, permite_editar):
     return redirect('movimientos:inicio')
 
 
-def eliminar_movimiento(request, permite_eliminar):
+def eliminar_movimiento(request, permite_eliminar, caja_hoy):
     if not permite_eliminar:
         return redirect('movimientos:inicio')
 
@@ -228,6 +328,7 @@ def eliminar_movimiento(request, permite_eliminar):
         MovimientoCaja,
         id_movimiento=request.POST.get('id_movimiento'),
         usuario=request.user,
+        caja=caja_hoy,
     )
     movimiento.delete()
 

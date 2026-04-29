@@ -11,13 +11,11 @@
 {% endblock %}
 
 {% block content %}
-
 <div class="dash">
-    {% include 'includes/sidebar.html' with active_module='reportes' %}
+    {% include 'includes/sidebar.html' with active_module='historial' %}
 
     <main class="main">
-        {% include 'includes/header.html' with header_title="Bienvenido" header_subtitle="" %}
-
+        {% include 'includes/header.html' with header_title="Historial Diario" header_subtitle="Historial de caja" %}
 
         <div class="content-body">
             <div class="grid4 resumen-cajas">
@@ -38,14 +36,13 @@
                 </div>
                 <div class="cardx">
                     <div class="label">Detalle</div>
-                    <div class="value">{% if caja_detalle %}{{ caja_detalle.fecha_caja|date:"d/m/Y" }}{% else %}Sin
-                        datos{% endif %}</div>
+                    <div class="value">{% if caja_detalle %}{{ caja_detalle.fecha_caja|date:"d/m/Y" }}{% else %}Vacío{% endif %}</div>
                     <div class="note">Jornada seleccionada</div>
                 </div>
             </div>
 
             <div class="grid2 historial-grid">
-                <div class="card-large">
+                <div class="card-large historial-bloque">
                     <div class="card-header">
                         <div class="card-title-group">
                             <span class="label">Historial de jornadas</span>
@@ -54,15 +51,9 @@
                     </div>
 
                     <form method="get" class="filtro-historial" data-async="si">
-                        <div class="filtro-grupo">
-                            <label for="fecha" class="filtro-label">Buscar jornada por fecha</label>
-                            <input type="date" id="fecha" name="fecha" value="{{ fecha_seleccionada }}"
-                                class="filtro-input">
-                        </div>
-                        <div class="filtro-acciones">
-                            <button type="submit" class="btn">Consultar dia</button>
-                            <a href="{% url 'historial:inicio' %}" class="btn-avanzado btn-secundario">Ver todo</a>
-                        </div>
+                        <input type="date" id="fecha" name="fecha" value="{{ fecha_seleccionada }}" class="filtro-input" aria-label="Buscar jornada por fecha">
+                        <button type="submit" class="filtro-btn filtro-btn-primario">Consultar dia</button>
+                        <a href="{% url 'historial:inicio' %}" class="filtro-btn filtro-btn-secundario">Ver todo</a>
                     </form>
 
                     {% if historial %}
@@ -71,42 +62,43 @@
                             <thead>
                                 <tr>
                                     <th>Fecha</th>
-                                    <th>Apertura</th>
-                                    <th>Ingresos</th>
-                                    <th>Egresos</th>
+                                    <th class="text-right">Apertura</th>
+                                    <th class="text-right">Ingresos</th>
+                                    <th class="text-right">Egresos</th>
+                                    <th class="text-right">Saldo final</th>
                                     <th>Estado</th>
                                     <th>Cierre</th>
-                                    <th>Diferencia</th>
-                                    <th>Ver</th>
+                                    <th class="text-right">Diferencia</th>
+                                    <th class="text-center">Acción</th>
                                 </tr>
                             </thead>
                             <tbody>
                                 {% for item in historial %}
-                                <tr>
+                                <tr class="historial-row {% if item.cierre %}historial-row-cerrado{% else %}historial-row-pendiente{% endif %}">
                                     <td>{{ item.caja.fecha_caja|date:"d/m/Y" }}</td>
-                                    <td>{{ app_currency_symbol }} {{ item.caja.monto_inicial }}</td>
-                                    <td>{{ app_currency_symbol }} {{ item.total_ingresos }}</td>
-                                    <td>{{ app_currency_symbol }} {{ item.total_egresos }}</td>
-                                    <td>{{ item.caja.estado_caja }}</td>
+                                    <td class="monto-col">{{ app_currency_symbol }} {{ item.caja.monto_inicial }}</td>
+                                    <td class="monto-col">{{ app_currency_symbol }} {{ item.total_ingresos }}</td>
+                                    <td class="monto-col">{{ app_currency_symbol }} {{ item.total_egresos }}</td>
+                                    <td class="monto-col">{{ app_currency_symbol }} {{ item.saldo_esperado }}</td>
                                     <td>
-                                        {% if item.cierre %}
-                                        {{ item.cierre.estado_cierre }}
-                                        {% else %}
-                                        Sin cierre
-                                        {% endif %}
+                                        <span class="estado-chip estado-caja {% if item.caja.estado_caja == 'ABIERTA' %}estado-caja-abierta{% elif item.caja.estado_caja == 'CERRADA' %}estado-caja-cerrada{% else %}estado-caja-pendiente{% endif %}">
+                                            {{ item.caja.estado_caja }}
+                                        </span>
                                     </td>
                                     <td>
                                         {% if item.cierre %}
-                                        {{ app_currency_symbol }} {{ item.diferencia }}
+                                        <span class="estado-chip cierre-chip {% if item.estado_cierre == 'CUADRADA' %}cierre-chip-cuadrada{% elif item.estado_cierre == 'FALTANTE' %}cierre-chip-faltante{% else %}cierre-chip-sobrante{% endif %}">
+                                            {{ item.estado_cierre }}
+                                        </span>
                                         {% else %}
-                                        Pendiente
+                                        <span class="estado-chip cierre-chip cierre-chip-pendiente">N/A</span>
                                         {% endif %}
                                     </td>
-                                    <td>
-                                        <a href="{% url 'historial:inicio' %}?fecha={{ item.caja.fecha_caja|date:'Y-m-d' }}#detalle-historial"
-                                            class="accion-link" data-async-link="si">
-                                            Ver detalle
-                                        </a>
+                                    <td class="monto-col {% if item.cierre %}{% if item.diferencia > 0 %}diferencia-positiva{% elif item.diferencia < 0 %}diferencia-negativa{% else %}diferencia-neutra{% endif %}{% else %}diferencia-neutra{% endif %}">
+                                        {% if item.cierre %}{{ app_currency_symbol }} {{ item.diferencia }}{% else %}--{% endif %}
+                                    </td>
+                                    <td class="text-center">
+                                        <a href="{% url 'historial:inicio' %}?fecha={{ item.caja.fecha_caja|date:'Y-m-d' }}#detalle-historial" class="accion-link" data-async-link="si">Detalles</a>
                                     </td>
                                 </tr>
                                 {% endfor %}
@@ -116,14 +108,13 @@
                     {% else %}
                     <div class="chart-area">
                         <div class="empty-state">
-                            <i class="fa-solid fa-clock"></i>
                             <p>Todavia no hay jornadas registradas.</p>
                         </div>
                     </div>
                     {% endif %}
                 </div>
 
-                <div class="card-side">
+                <div class="card-side historial-bloque">
                     <div class="label">Resumen del detalle</div>
                     <div class="close-summary mt-4">
                         <div class="s-row">
@@ -139,14 +130,12 @@
                             <b>{{ app_currency_symbol }} {{ total_egresos_detalle }}</b>
                         </div>
                         <div class="s-row">
+                            <span>Saldo final</span>
+                            <b>{{ app_currency_symbol }} {{ saldo_esperado_detalle }}</b>
+                        </div>
+                        <div class="s-row">
                             <span>Cierre</span>
-                            <b>
-                                {% if cierre_detalle %}
-                                {{ cierre_detalle.estado_cierre }}
-                                {% else %}
-                                Pendiente
-                                {% endif %}
-                            </b>
+                            <b>{% if cierre_detalle %}{{ estado_cierre_detalle }}{% else %}Pendiente{% endif %}</b>
                         </div>
                         <div class="s-row">
                             <span>Diferencia</span>
@@ -156,90 +145,92 @@
                 </div>
             </div>
 
-            <div id="detalle-historial" class="card-large mt-panel">
+            <div id="detalle-historial" class="card-large historial-bloque mt-panel">
                 <div class="card-header">
                     <div class="card-title-group">
                         <span class="label">Detalle de la jornada</span>
-                        <p class="note">Apertura, movimientos y cierre del dia seleccionado.</p>
                     </div>
                 </div>
 
                 {% if caja_detalle %}
-                <div class="detalle-historial-grid">
-                    <div class="detalle-columna">
-                        <h3 class="subtitulo-panel">Apertura</h3>
-                        <div class="close-summary">
-                            <div class="s-row">
-                                <span>Fecha</span>
-                                <b>{{ caja_detalle.fecha_caja|date:"d/m/Y" }}</b>
-                            </div>
-                            <div class="s-row">
-                                <span>Hora</span>
-                                <b>{{ caja_detalle.hora_apertura }}</b>
-                            </div>
-                            <div class="s-row">
-                                <span>Monto inicial</span>
-                                <b>{{ app_currency_symbol }} {{ caja_detalle.monto_inicial }}</b>
-                            </div>
-                            <div class="s-row">
-                                <span>Estado</span>
-                                <b>{{ caja_detalle.estado_caja }}</b>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="detalle-columna">
-                        <h3 class="subtitulo-panel">Cierre</h3>
-                        {% if cierre_detalle %}
-                        <div class="close-summary">
-                            <div class="s-row">
-                                <span>Estado</span>
-                                <b>{{ cierre_detalle.estado_cierre }}</b>
-                            </div>
-                            <div class="s-row">
-                                <span>Saldo real</span>
-                                <b>{{ app_currency_symbol }} {{ cierre_detalle.saldo_real }}</b>
-                            </div>
-                            <div class="s-row">
-                                <span>Saldo digital</span>
-                                <b>{{ app_currency_symbol }} {{ cierre_detalle.saldo_real_digital }}</b>
-                            </div>
-                            <div class="s-row">
-                                <span>Diferencia</span>
-                                <b>{{ app_currency_symbol }} {{ diferencia_detalle }}</b>
-                            </div>
-                        </div>
-                        {% else %}
-                        <div class="chart-area historial-vacio">
-                            <div class="empty-state">
-                                <i class="fa-solid fa-lock"></i>
-                                <p>Esta jornada no tiene cierre registrado.</p>
-                            </div>
-                        </div>
-                        {% endif %}
+                <div class="detalle-comparativo">
+                    <div class="tabla-wrap tabla-comparativa-wrap">
+                        <table class="tabla-comparativa-historial">
+                            <thead>
+                                <tr>
+                                    <th>Concepto</th>
+                                    <th>Apertura</th>
+                                    <th>Cierre</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>Fecha</td>
+                                    <td>{{ caja_detalle.fecha_caja|date:"d/m/Y" }}</td>
+                                    <td>{% if cierre_detalle %}{{ caja_detalle.fecha_caja|date:"d/m/Y" }}{% else %}<span class="valor-vacio">No registrado</span>{% endif %}</td>
+                                </tr>
+                                <tr>
+                                    <td>Hora</td>
+                                    <td>{{ caja_detalle.hora_apertura }}</td>
+                                    <td>{% if cierre_detalle %}{{ cierre_detalle.hora_cierre }}{% else %}<span class="valor-vacio">Sin cierre</span>{% endif %}</td>
+                                </tr>
+                                <tr>
+                                    <td>Monto principal</td>
+                                    <td>{{ app_currency_symbol }} {{ caja_detalle.monto_inicial }}</td>
+                                    <td>{% if cierre_detalle %}{{ app_currency_symbol }} {{ cierre_detalle.saldo_real }}{% else %}<span class="valor-vacio">--</span>{% endif %}</td>
+                                </tr>
+                                <tr>
+                                    <td>Saldo digital</td>
+                                    <td><span class="valor-vacio">--</span></td>
+                                    <td>{% if cierre_detalle %}{{ app_currency_symbol }} {{ cierre_detalle.saldo_real_digital }}{% else %}<span class="valor-vacio">--</span>{% endif %}</td>
+                                </tr>
+                                <tr>
+                                    <td>Estado</td>
+                                    <td>
+                                        <span class="estado-chip estado-caja {% if caja_detalle.estado_caja == 'ABIERTA' %}estado-caja-abierta{% elif caja_detalle.estado_caja == 'CERRADA' %}estado-caja-cerrada{% else %}estado-caja-pendiente{% endif %}">
+                                            {{ caja_detalle.estado_caja }}
+                                        </span>
+                                    </td>
+                                    <td>
+                                        {% if cierre_detalle %}
+                                        <span class="estado-chip cierre-chip {% if estado_cierre_detalle == 'CUADRADA' %}cierre-chip-cuadrada{% elif estado_cierre_detalle == 'FALTANTE' %}cierre-chip-faltante{% else %}cierre-chip-sobrante{% endif %}">
+                                            {{ estado_cierre_detalle }}
+                                        </span>
+                                        {% else %}
+                                        <span class="estado-chip cierre-chip cierre-chip-pendiente">Sin cierre</span>
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>Diferencia</td>
+                                    <td><span class="valor-vacio">--</span></td>
+                                    <td class="{% if cierre_detalle %}{% if diferencia_detalle > 0 %}diferencia-positiva{% elif diferencia_detalle < 0 %}diferencia-negativa{% else %}diferencia-neutra{% endif %}{% else %}diferencia-neutra{% endif %}">
+                                        {% if cierre_detalle %}{{ app_currency_symbol }} {{ diferencia_detalle }}{% else %}<span class="valor-vacio">Esta jornada no tiene cierre registrado.</span>{% endif %}
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
                     </div>
                 </div>
 
                 <div class="resumen-jornada mt-panel">
-                    <div class="resumen-item">
+                    <div class="resumen-item resumen-item-apertura">
                         <span class="resumen-label">Apertura del dia</span>
                         <strong>{{ app_currency_symbol }} {{ caja_detalle.monto_inicial }}</strong>
                     </div>
-                    <div class="resumen-item">
+                    <div class="resumen-item resumen-item-movimientos">
                         <span class="resumen-label">Movimientos del dia</span>
                         <strong>{{ movimientos_detalle|length }}</strong>
                     </div>
-                    <div class="resumen-item">
+                    <div class="resumen-item resumen-item-cierre {% if cierre_detalle %}resumen-item-cierre-{{ estado_cierre_detalle|lower }}{% else %}resumen-item-cierre-pendiente{% endif %}">
                         <span class="resumen-label">Cierre del dia</span>
-                        <strong>
-                            {% if cierre_detalle %}
-                            {{ cierre_detalle.estado_cierre }}
-                            {% else %}
-                            Pendiente
-                            {% endif %}
-                        </strong>
+                        <strong>{% if cierre_detalle %}{{ estado_cierre_detalle }}{% else %}Pendiente{% endif %}</strong>
                     </div>
-                    <div class="resumen-item">
+                    <div class="resumen-item resumen-item-saldo">
+                        <span class="resumen-label">Saldo final esperado</span>
+                        <strong>{{ app_currency_symbol }} {{ saldo_esperado_detalle }}</strong>
+                    </div>
+                    <div class="resumen-item resumen-item-diferencia {% if diferencia_detalle > 0 %}resumen-item-diferencia-positiva{% elif diferencia_detalle < 0 %}resumen-item-diferencia-negativa{% else %}resumen-item-diferencia-neutra{% endif %}">
                         <span class="resumen-label">Diferencia encontrada</span>
                         <strong>{{ app_currency_symbol }} {{ diferencia_detalle }}</strong>
                     </div>
@@ -252,21 +243,29 @@
                                 <th>Hora</th>
                                 <th>Tipo</th>
                                 <th>Descripcion</th>
-                                <th>Monto</th>
+                                <th class="text-right">Monto</th>
                                 <th>Medio</th>
                             </tr>
                         </thead>
                         <tbody>
                             {% for movimiento in movimientos_detalle %}
-                            <tr>
+                            <tr class="{% if movimiento.tipo_movimiento == 'INGRESO' %}movimiento-row-ingreso{% else %}movimiento-row-egreso{% endif %}">
                                 <td>{{ movimiento.hora_movimiento }}</td>
-                                <td>{{ movimiento.tipo_movimiento }}</td>
+                                <td>
+                                    <span class="tipo-chip {% if movimiento.tipo_movimiento == 'INGRESO' %}tipo-chip-ingreso{% else %}tipo-chip-egreso{% endif %}">
+                                        {{ movimiento.tipo_movimiento }}
+                                    </span>
+                                </td>
                                 <td>{{ movimiento.descripcion }}</td>
-                                <td>{{ app_currency_symbol }} {{ movimiento.monto }}</td>
-                                <td>{{ movimiento.medio_pago }}</td>
+                                <td class="monto-col">{{ app_currency_symbol }} {{ movimiento.monto }}</td>
+                                <td>
+                                    <span class="medio-chip {% if movimiento.medio_pago == 'EFECTIVO' %}medio-chip-efectivo{% else %}medio-chip-digital{% endif %}">
+                                        {{ movimiento.medio_pago }}
+                                    </span>
+                                </td>
                             </tr>
                             {% empty %}
-                            <tr>
+                            <tr class="tabla-vacia">
                                 <td colspan="5">No hay movimientos registrados en esta jornada.</td>
                             </tr>
                             {% endfor %}
@@ -276,7 +275,6 @@
                 {% else %}
                 <div class="chart-area">
                     <div class="empty-state">
-                        <i class="fa-solid fa-folder-open"></i>
                         <p>No hay detalle disponible todavia.</p>
                     </div>
                 </div>

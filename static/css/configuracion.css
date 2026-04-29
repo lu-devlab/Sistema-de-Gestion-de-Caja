@@ -128,4 +128,11 @@
     background: #22c55e;
 }
 
+/* Ajustes exclusivos para el formulario de subida de foto */
+form[enctype="multipart/form-data"] img {
+    border-radius: 50%;
+}
 
+form[enctype="multipart/form-data"] .form-footer-box {
+    justify-content: center;
+}

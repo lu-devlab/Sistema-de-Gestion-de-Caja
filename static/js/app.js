@@ -6,6 +6,7 @@ const cajaPulso = (() => {
         activarAlertas(document);
         activarToasts(document);
         activarValidaciones(document);
+        activarAvisoEgreso(document);
         activarFiltros(document);
         activarExportacionPdf(document);
         activarAccionesAsync(document);
@@ -200,6 +201,53 @@ const cajaPulso = (() => {
         campo.classList.toggle('campo-ok', valido && !!valor);
     }
 
+    function activarAvisoEgreso(root) {
+        const formulario = root.querySelector('#form-movimiento');
+
+        if (!formulario || formulario.dataset.avisoEgresoActivo === 'si') {
+            return;
+        }
+
+        const tipo = formulario.querySelector('#tipo_movimiento');
+        const monto = formulario.querySelector('#monto');
+        const aviso = formulario.querySelector('[data-egreso-warning]');
+
+        if (!tipo || !monto || !aviso) {
+            return;
+        }
+
+        formulario.dataset.avisoEgresoActivo = 'si';
+
+        const actualizar = () => {
+            const saldoDisponible = Number(formulario.dataset.saldoDisponible || 0);
+            const montoValor = Number(monto.value || 0);
+            const excedeSaldo = (
+                tipo.value === 'EGRESO' &&
+                montoValor > saldoDisponible
+            );
+
+            aviso.classList.toggle('is-visible', excedeSaldo);
+
+            if (excedeSaldo) {
+                const mensaje = (
+                    `Ojo: estas registrando un egreso mayor al saldo disponible ` +
+                    `(${saldoDisponible.toFixed(2)}).`
+                );
+                aviso.textContent = mensaje;
+                monto.setCustomValidity(mensaje);
+                monto.classList.add('campo-error');
+                monto.classList.remove('campo-ok');
+            } else if (monto.validationMessage.startsWith('Ojo:')) {
+                monto.setCustomValidity('');
+            }
+        };
+
+        tipo.addEventListener('change', actualizar);
+        monto.addEventListener('input', actualizar);
+        monto.addEventListener('blur', actualizar);
+        actualizar();
+    }
+
     function activarFiltros(root) {
         const periodo = root.querySelector('#periodo');
         const fecha = root.querySelector('#fecha');
@@ -350,6 +398,7 @@ const cajaPulso = (() => {
             activarAlertas(document);
             activarToasts(document);
             activarValidaciones(document);
+            activarAvisoEgreso(document);
             activarFiltros(document);
             activarExportacionPdf(document);
             activarAccionesAsync(document);
@@ -392,8 +441,8 @@ const cajaPulso = (() => {
             return;
         }
 
-        crearGraficoLinea(datos);
-        crearGraficoEstado(datos);
+        crearGraficoBarrasPeriodo(datos);
+        crearGraficoPieEstado(datos);
     }
 
     function actualizarDatosGraficos(doc) {
@@ -425,7 +474,7 @@ const cajaPulso = (() => {
         });
     }
 
-    function crearGraficoLinea(datos) {
+    function crearGraficoBarrasPeriodo(datos) {
         const canvas = document.querySelector('#grafico-periodo');
 
         if (!canvas) {
@@ -440,26 +489,20 @@ const cajaPulso = (() => {
                     {
                         label: 'Ingresos',
                         data: datos.ingresos,
-                        borderColor: '#1f8a5b',
-                        backgroundColor: 'rgba(31, 138, 91, 0.12)',
-                        borderRadius: 10,
-                        borderSkipped: false,
+                        backgroundColor: '#10b981',
+                        borderRadius: 8,
                     },
                     {
                         label: 'Egresos',
                         data: datos.egresos,
-                        borderColor: '#d46464',
-                        backgroundColor: 'rgba(212, 100, 100, 0.74)',
-                        borderRadius: 10,
-                        borderSkipped: false,
+                        backgroundColor: '#ef4444',
+                        borderRadius: 8,
                     },
                     {
-                        label: 'Saldo neto',
+                        label: 'Saldo final',
                         data: datos.saldos,
-                        borderColor: '#245d4a',
-                        backgroundColor: 'rgba(36, 93, 74, 0.74)',
-                        borderRadius: 10,
-                        borderSkipped: false,
+                        backgroundColor: '#065f46',
+                        borderRadius: 8,
                     },
                 ],
             },
@@ -469,107 +512,77 @@ const cajaPulso = (() => {
                 plugins: {
                     legend: {
                         position: 'bottom',
+                        labels: { usePointStyle: true, padding: 20 }
                     },
                 },
                 scales: {
-                    y: {
-                        beginAtZero: true,
-                    },
+                    x: { grid: { display: false } },
+                    y: { beginAtZero: true, grid: { color: '#e3ece7' } },
                 },
             },
         });
     }
 
-    function crearGraficoEstado(datos) {
+    function crearGraficoPieEstado(datos) {
         const canvas = document.querySelector('#grafico-cierres');
 
         if (!canvas) {
             return;
         }
 
-        const porcentajePlugin = {
-            id: 'porcentajePlugin',
+        const porcentajeLabels = {
+            id: 'porcentajeLabels',
             afterDatasetsDraw(chart) {
-                const { ctx } = chart;
-                const dataset = chart.data.datasets[0];
-                const total = dataset.data.reduce(
-                    (acumulado, valor) => acumulado + valor,
-                    0,
-                );
+                const { ctx, data } = chart;
+                ctx.save();
+                const dataset = data.datasets[0];
+                const total = dataset.data.reduce((a, b) => a + b, 0);
 
-                if (!total) {
-                    return;
-                }
+                if (total === 0) return;
 
-                chart.getDatasetMeta(0).data.forEach((arco, indice) => {
-                    const valor = dataset.data[indice];
+                chart.getDatasetMeta(0).data.forEach((arco, i) => {
+                    const value = dataset.data[i];
+                    if (value === 0) return;
 
-                    if (!valor) {
-                        return;
-                    }
+                    const percent = ((value / total) * 100).toFixed(0) + '%';
+                    const { x, y } = arco.tooltipPosition();
 
-                    const porcentaje = Math.round((valor / total) * 100);
-                    const posicion = arco.tooltipPosition();
-
-                    ctx.save();
-                    ctx.fillStyle = '#113426';
-                    ctx.font = '700 12px Inter';
+                    ctx.fillStyle = '#ffffff';
+                    ctx.font = 'bold 13px Inter';
                     ctx.textAlign = 'center';
                     ctx.textBaseline = 'middle';
-                    ctx.fillText(
-                        `${porcentaje}%`,
-                        posicion.x,
-                        posicion.y,
-                    );
+                    ctx.shadowBlur = 4;
+                    ctx.shadowColor = 'rgba(0,0,0,0.5)';
+                    ctx.fillText(percent, x, y);
                     ctx.restore();
                 });
-            },
+            }
         };
 
         graficos.cierres = new Chart(canvas, {
-            type: 'doughnut',
+            type: 'pie',
             data: {
-                labels: construirEtiquetasEstado(datos.estados),
+                labels: ['Cuadrado', 'Faltante', 'Sobrante'],
                 datasets: [
                     {
                         data: datos.estados,
-                        backgroundColor: [
-                            '#2a8c61',
-                            '#df7d4a',
-                            '#4d9ab7',
-                        ],
-                        borderWidth: 0,
+                        backgroundColor: ['#10b981', '#f97316', '#047857'],
+                        borderWidth: 2,
+                        borderColor: '#ffffff',
                     },
                 ],
             },
             options: {
                 responsive: true,
                 maintainAspectRatio: false,
-                cutout: '58%',
                 plugins: {
                     legend: {
                         position: 'bottom',
+                        labels: { usePointStyle: true, padding: 20 }
                     },
                 },
             },
-            plugins: [porcentajePlugin],
-        });
-    }
-
-    function construirEtiquetasEstado(estados) {
-        const nombres = ['Cuadrada', 'Faltante', 'Sobrante'];
-        const total = estados.reduce(
-            (acumulado, valor) => acumulado + valor,
-            0,
-        );
-
-        return nombres.map((nombre, indice) => {
-            const valor = estados[indice];
-            const porcentaje = total
-                ? Math.round((valor / total) * 100)
-                : 0;
-
-            return `${nombre} ${porcentaje}%`;
+            plugins: [porcentajeLabels],
         });
     }
 

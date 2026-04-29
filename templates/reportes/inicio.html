@@ -47,27 +47,15 @@
                     <div class="card-header">
                         <div class="card-title-group">
                             <span class="label">Consulta por periodo</span>
-                            <p class="note">
-                                Revise caja diaria por día, semana, mes,
-                                Año o rango de fechas.
-                            </p>
-                        </div>
-                        <div class="acciones-reporte">
-                            <button type="button" class="btn-avanzado btn-secundario btn-pdf" data-exportar-pdf="si">
-                                Exportar PDF
-                            </button>
+                            <p class="note">Revise caja diaria por día, semana, mes, Año o rango de fechas.</p>
                         </div>
                     </div>
 
                     <form method="get" class="filtro-reportes" data-async="si">
                         <div class="filtro-bloque">
-                            <label for="periodo" class="filtro-label">
-                                Tipo de periodo
-                            </label>
                             <select id="periodo" name="periodo" class="filtro-input">
                                 <option value="dia" {% if tipo_periodo == 'dia' %} selected {% endif %}>Día</option>
-                                <option value="semana" {% if tipo_periodo == 'semana' %} selected {% endif %}>Semana
-                                </option>
+                                <option value="semana" {% if tipo_periodo == 'semana' %} selected {% endif %}>Semana</option>
                                 <option value="mes" {% if tipo_periodo == 'mes' %} selected {% endif %}>Mes</option>
                                 <option value="anio" {% if tipo_periodo == 'anio' %} selected {% endif %}>Año</option>
                                 <option value="rango" {% if tipo_periodo == 'rango' %} selected {% endif %}>Rango</option>
@@ -75,33 +63,24 @@
                         </div>
 
                         <div class="filtro-bloque">
-                            <label for="fecha" class="filtro-label">
-                                Fecha base
-                            </label>
                             <input type="date" id="fecha" name="fecha" value="{{ fecha_texto }}" class="filtro-input">
                         </div>
 
                         <div class="filtro-bloque">
-                            <label for="desde" class="filtro-label">
-                                Desde
-                            </label>
+                            <label for="desde" class="filtro-label">Desde</label>
                             <input type="date" id="desde" name="desde" value="{{ desde_texto }}" class="filtro-input">
                         </div>
 
                         <div class="filtro-bloque">
-                            <label for="hasta" class="filtro-label">
-                                Hasta
-                            </label>
+                            <label for="hasta" class="filtro-label">Hasta</label>
                             <input type="date" id="hasta" name="hasta" value="{{ hasta_texto }}" class="filtro-input">
                         </div>
 
                         <div class="filtro-acciones filtro-acciones-reportes">
-                            <button type="submit" class="btn-avanzado">
-                                Consultar
-                            </button>
-                            <a href="{% url 'reportes:inicio' %}" class="btn-avanzado btn-secundario">
-                                Limpiar
-                            </a>
+                            <button type="submit" class="btn-avanzado">Consultar</button>
+                            <a href="{% url 'reportes:inicio' %}" class="btn-avanzado btn-secundario">Limpiar</a>
+                            <button type="button" class="btn-avanzado btn-secundario btn-pdf"
+                                data-exportar-pdf="si">Exportar PDF</button>
                         </div>
                     </form>
 
@@ -114,7 +93,7 @@
                                     <th>Apertura</th>
                                     <th>Ingresos</th>
                                     <th>Egresos</th>
-                                    <th>Saldo neto</th>
+                                    <th>Saldo final</th>
                                     <th>Cierre</th>
                                     <th>Diferencia</th>
                                 </tr>
@@ -129,9 +108,9 @@
                                     <td>{{ app_currency_symbol }} {{ item.saldo_neto }}</td>
                                     <td>
                                         {% if item.cierre %}
-                                        {{ item.cierre.estado_cierre }}
+                                        {{ item.estado_cierre }}
                                         {% else %}
-                                        Sin cierre
+                                        Pendiente
                                         {% endif %}
                                     </td>
                                     <td>
@@ -172,7 +151,7 @@
                             <b>{{ app_currency_symbol }} {{ total_egresos }}</b>
                         </div>
                         <div class="s-row mt-2">
-                            <span>SALDO NETO</span>
+                            <span>SALDO FINAL</span>
                             <b>{{ app_currency_symbol }} {{ saldo_neto }}</b>
                         </div>
                         <div class="s-row mt-2">
@@ -187,10 +166,7 @@
                 <div class="card-header">
                     <div class="card-title-group">
                         <span class="label">Reporte simple del periodo</span>
-                        <p class="note">
-                            Resumen general para control diario, semanal,
-                            mensual o anual
-                        </p>
+                        <p class="note">Resumen general para control diario, semanal, mensual o anual</p>
                     </div>
                 </div>
 
@@ -203,35 +179,35 @@
                             </tr>
                         </thead>
                         <tbody>
-                            <tr>
+                            <tr class="reporte-row reporte-row-periodo">
                                 <td>Periodo consultado</td>
                                 <td>{{ nombre_periodo }}</td>
                             </tr>
-                            <tr>
+                            <tr class="reporte-row reporte-row-rango">
                                 <td>Rango de fechas</td>
                                 <td>{{ fecha_resumen }}</td>
                             </tr>
-                            <tr>
+                            <tr class="reporte-row reporte-row-apertura">
                                 <td>Total apertura</td>
                                 <td>{{ app_currency_symbol }} {{ total_apertura }}</td>
                             </tr>
-                            <tr>
+                            <tr class="reporte-row reporte-row-ingresos">
                                 <td>Total ingresos</td>
                                 <td>{{ app_currency_symbol }} {{ total_ingresos }}</td>
                             </tr>
-                            <tr>
+                            <tr class="reporte-row reporte-row-egresos">
                                 <td>Total egresos</td>
                                 <td>{{ app_currency_symbol }} {{ total_egresos }}</td>
                             </tr>
-                            <tr class="fila-total-tabla">
-                                <td>Saldo neto</td>
+                            <tr class="reporte-row reporte-row-saldo fila-total-tabla">
+                                <td>Saldo final</td>
                                 <td>{{ app_currency_symbol }} {{ saldo_neto }}</td>
                             </tr>
-                            <tr>
+                            <tr class="reporte-row reporte-row-diferencia">
                                 <td>Diferencias encontradas</td>
                                 <td>{{ app_currency_symbol }} {{ total_diferencia }}</td>
                             </tr>
-                            <tr>
+                            <tr class="reporte-row reporte-row-jornadas">
                                 <td>Jornadas revisadas</td>
                                 <td>{{ jornadas|length }}</td>
                             </tr>
@@ -243,9 +219,7 @@
                 <div class="resumen-jornada mt-panel">
                     <div class="resumen-item">
                         <span class="resumen-label">Ultima jornada</span>
-                        <strong>
-                            {{ detalle_jornada.caja.fecha_caja|date:"d/m/Y" }}
-                        </strong>
+                        <strong>{{ detalle_jornada.caja.fecha_caja|date:"d/m/Y" }}</strong>
                     </div>
                     <div class="resumen-item">
                         <span class="resumen-label">Movimientos</span>
@@ -255,7 +229,7 @@
                         <span class="resumen-label">Estado cierre</span>
                         <strong>
                             {% if detalle_jornada.cierre %}
-                            {{ detalle_jornada.cierre.estado_cierre }}
+                            {{ detalle_jornada.estado_cierre }}
                             {% else %}
                             Sin cierre
                             {% endif %}
@@ -274,10 +248,7 @@
                     <div class="card-header">
                         <div class="card-title-group">
                             <span class="label">Grafico del periodo</span>
-                            <p class="note">
-                                Comparativo visual de ingresos, egresos
-                                y saldo neto.
-                            </p>
+                            <p class="note">Comparativo visual de ingresos, egresos y saldo final.</p>
                         </div>
                     </div>
                     <div class="grafico-panel">
@@ -289,10 +260,7 @@
                     <div class="card-header">
                         <div class="card-title-group">
                             <span class="label">Estado de cierres</span>
-                            <p class="note">
-                                Distribución de jornadas cuadradas,
-                                faltantes y sobrantes.
-                            </p>
+                            <p class="note">Distribución de jornadas cuadradas, faltantes y sobrantes.</p>
                         </div>
                     </div>
                     <div class="grafico-panel">

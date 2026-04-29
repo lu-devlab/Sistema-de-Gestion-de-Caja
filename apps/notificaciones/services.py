@@ -4,11 +4,13 @@ from django.utils import timezone
 
 from apertura.models import CajaDiaria
 from cierre.models import CierreCaja
+from movimientos.calculos import calcular_diferencia_cierre
 
 from .models import Notificacion
 
 TIPOS_NOTIFICACION = {
     'APERTURA_PENDIENTE': 'Apertura pendiente',
+    'APERTURA_REGISTRADA': 'Apertura registrada',
     'CIERRE_PENDIENTE': 'Cierre pendiente',
     'DIFERENCIA_CAJA': 'Diferencia de caja',
     'GASTO_ELEVADO': 'Gasto elevado',
@@ -116,6 +118,13 @@ def sincronizar_notificaciones_usuario(usuario):
         )
     else:
         eliminar_notificacion(usuario, 'APERTURA_PENDIENTE', hoy)
+        crear_o_actualizar_notificacion(
+            usuario,
+            'APERTURA_REGISTRADA',
+            hoy,
+            'Caja abierta correctamente',
+            f'La caja del dia fue abierta con un monto inicial de {caja_hoy.monto_inicial}',
+        )
 
     if caja_hoy and cierre_hoy is None and caja_hoy.estado_caja == 'ABIERTA':
         crear_o_actualizar_notificacion(
@@ -128,13 +137,17 @@ def sincronizar_notificaciones_usuario(usuario):
     else:
         eliminar_notificacion(usuario, 'CIERRE_PENDIENTE', hoy)
 
-    if cierre_hoy and cierre_hoy.diferencia != Decimal('0.00'):
+    diferencia_cierre = Decimal('0.00')
+    if cierre_hoy:
+        diferencia_cierre = calcular_diferencia_cierre(caja_hoy, cierre_hoy)
+
+    if cierre_hoy and diferencia_cierre != Decimal('0.00'):
         crear_o_actualizar_notificacion(
             usuario,
             'DIFERENCIA_CAJA',
             hoy,
             'Diferencia detectada en caja',
-            construir_mensaje_diferencia(cierre_hoy.diferencia),
+            construir_mensaje_diferencia(diferencia_cierre),
             reabrir_si_cambia=True,
         )
     else:

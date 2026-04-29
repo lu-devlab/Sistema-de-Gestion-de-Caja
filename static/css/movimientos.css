@@ -1,5 +1,21 @@
 /* Estilos Especificos - Movimientos de Caja */
 
+.resumen-cajas {
+    --summary-card-min-height: 96px;
+    --summary-card-padding-y: 11px;
+    --summary-card-padding-x: 14px;
+    --summary-card-gap: 4px;
+}
+
+.resumen-cajas .cardx .value {
+    font-size: clamp(0.92rem, 0.86rem + 0.42vw, 1.2rem);
+}
+
+.resumen-cajas .cardx .note {
+    font-size: 0.75rem;
+    line-height: 1.2;
+}
+
 .movimientos-grid {
     align-items: start;
 }
@@ -47,22 +63,24 @@
     align-items: center;
 }
 
+.aviso-egreso {
+    display: none;
+    margin-top: 10px;
+    padding: 10px 12px;
+    border: 1px solid rgba(220, 38, 38, 0.28);
+    border-radius: 8px;
+    background: #fef2f2;
+    color: #b91c1c;
+    font-size: 0.84rem;
+    font-weight: 800;
+}
+
+.aviso-egreso.is-visible {
+    display: block;
+}
+
 .tabla-avanzado-movimientos {
-    background: linear-gradient(180deg, #f4fbf7, #e7f3ec);
-    box-shadow: 0 16px 30px rgba(20, 77, 53, 0.10);
-}
-
-.tabla-avanzado-listado thead th {
-    background: rgba(86, 138, 111, 0.18);
-    color: #234636;
-    padding: 18px 22px;
-}
-
-.tabla-avanzado-listado tbody td {
-    color: #173b2d;
-    border-top: 1px solid rgba(18, 73, 50, 0.12);
-    padding: 18px 22px;
-    vertical-align: middle;
+    box-shadow: 0 16px 30px rgba(20, 77, 53, 0.08);
 }
 
 .tipo-ingreso {
@@ -97,7 +115,16 @@
 }
 
 .accion-borrar {
-    color: #b14f68;
+    color: #fff;
+    background: #e74c3c;
+    padding: 5px 14px;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: background 0.2s ease;
+}
+
+.accion-borrar:hover {
+    background: #c0392b;
 }
 
 .tipo-texto {

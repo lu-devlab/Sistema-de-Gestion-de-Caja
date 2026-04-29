@@ -15,6 +15,10 @@
     --shadow-avanzado: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
     --radius-avanzado: 16px;
     --transition-smooth: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    --summary-card-min-height: 112px;
+    --summary-card-padding-y: 14px;
+    --summary-card-padding-x: 16px;
+    --summary-card-gap: 6px;
 }
 
 body {
@@ -191,20 +195,33 @@ body {
     position: relative;
 }
 
+/* Línea separadora para el perfil */
+.user-profile {
+    display: flex;
+    align-items: center;
+}
+
+.user-profile::before {
+    content: "";
+    height: 28px;
+    width: 2px;
+    background-color: var(--border-soft);
+    margin-right: 16px;
+    margin-left: 8px;
+}
+
 .icon-btn {
     position: relative;
-    width: 40px;
-    height: 40px;
-    border-radius: 10px;
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 1.1rem;
+    font-size: 1.4rem;
+    /* Tamaño aumentado */
     color: var(--text-muted);
     cursor: pointer;
-    border: 1px solid var(--border-soft);
-    background: transparent;
     transition: var(--transition-smooth);
+    border: none;
+    background: transparent;
 }
 
 .icon-btn-link {
@@ -212,15 +229,11 @@ body {
 }
 
 .icon-btn:hover {
-    background-color: var(--bg-general);
     color: var(--primary-green);
-    border-color: var(--primary-green);
 }
 
 .icon-btn.active {
-    background-color: rgba(15, 138, 75, 0.08);
     color: var(--primary-green);
-    border-color: rgba(15, 138, 75, 0.28);
 }
 
 .dot {
@@ -256,7 +269,7 @@ body {
 .u-avatar {
     width: 40px;
     height: 40px;
-    border-radius: 10px;
+    border-radius: 50%;
     overflow: hidden;
     background: var(--bg-general);
     display: flex;
@@ -276,6 +289,7 @@ body {
     border: 1px solid var(--border-soft);
     box-shadow: var(--shadow-sm);
     transition: var(--transition-smooth);
+    min-width: 0;
 }
 
 .cardx {
@@ -283,6 +297,7 @@ body {
     display: flex;
     flex-direction: column;
     gap: 12px;
+    min-height: 0;
 }
 
 .cardx:hover {
@@ -303,6 +318,8 @@ body {
     letter-spacing: 0.12em;
     margin-bottom: 10px;
     text-transform: uppercase;
+    line-height: 1.25;
+    overflow-wrap: anywhere;
 }
 
 .value {
@@ -310,6 +327,9 @@ body {
     color: var(--text-main);
     margin-bottom: 4px;
     line-height: 1.15;
+    max-width: 100%;
+    overflow-wrap: anywhere;
+    word-break: break-word;
 }
 
 .note {
@@ -317,6 +337,8 @@ body {
     color: #6b8177;
     margin-top: 6px;
     line-height: 1.45;
+    max-width: 100%;
+    overflow-wrap: anywhere;
 }
 
 
@@ -379,7 +401,7 @@ body {
 .perfil-avatar {
     width: 44px;
     height: 44px;
-    border-radius: 10px;
+    border-radius: 50%;
     overflow: hidden;
     background: rgba(255, 255, 255, 0.1);
     display: flex;
@@ -583,6 +605,7 @@ body {
     grid-template-columns: repeat(4, 1fr);
     gap: 24px;
     margin-bottom: 32px;
+    align-items: stretch;
 }
 
 @media (max-width: 1200px) {
@@ -607,6 +630,67 @@ body {
     .grid2 {
         grid-template-columns: 1fr;
     }
+}
+
+/* ==========================================================================
+   COMPONENTES GLOBALES: TABLAS PREMIUM
+   ========================================================================== */
+
+/* Contenedor con bordes redondeados */
+.tabla-wrap,
+.tabla-avanzado-wrap {
+    width: 100%;
+    background: #ffffff;
+    border-radius: 12px;
+    border: 1px solid var(--border-soft);
+    overflow: hidden;
+    margin-top: 16px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.03);
+}
+
+/* Estructura Base */
+table[class*="tabla-"] {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+/* Encabezados Profesionales */
+table[class*="tabla-"] thead th {
+    background: linear-gradient(180deg, #ddf1e5 0%, #cbe6d7 100%);
+    padding: 16px 20px;
+    color: #163c2d;
+    font-size: 0.72rem;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    text-align: left;
+    border-bottom: 2px solid rgba(11, 107, 67, 0.52);
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.38);
+}
+
+/* Celdas y Contenido */
+table[class*="tabla-"] tbody td {
+    padding: 16px 20px;
+    color: var(--text-main);
+    font-size: 0.9rem;
+    border-bottom: 1px solid var(--border-soft);
+    vertical-align: middle;
+    transition: background-color 0.2s ease;
+}
+
+/* Zebra Striping Profesional */
+table[class*="tabla-"] tbody tr:nth-child(even) {
+    background-color: #fafcfb;
+}
+
+/* Interacción */
+table[class*="tabla-"] tbody tr:hover {
+    background-color: rgba(6, 120, 77, 0.03);
+}
+
+/* Ajustes de Última Fila */
+table[class*="tabla-"] tbody tr:last-child td {
+    border-bottom: 0;
 }
 
 .content-body::after {

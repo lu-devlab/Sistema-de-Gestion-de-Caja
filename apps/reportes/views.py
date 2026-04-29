@@ -7,7 +7,11 @@ from django.utils import timezone
 
 from apertura.models import CajaDiaria
 from cierre.models import CierreCaja
-from movimientos.models import MovimientoCaja
+from movimientos.calculos import (
+    calcular_diferencia_cierre,
+    obtener_estado_cierre,
+    obtener_totales_caja,
+)
 
 
 def obtener_rango_periodo(tipo_periodo, fecha_base, desde, hasta):
@@ -43,22 +47,26 @@ def obtener_rango_periodo(tipo_periodo, fecha_base, desde, hasta):
 
 
 def calcular_resumen_jornada(caja):
-    movimientos = MovimientoCaja.objects.filter(
-        caja=caja,
-    ).order_by('-hora_movimiento', '-id_movimiento')
+    totales = obtener_totales_caja(
+        caja,
+        incluir_movimientos=True,
+        ordenar=True,
+    )
+    movimientos = totales['movimientos']
     cierre = CierreCaja.objects.filter(caja=caja).first()
-    total_ingresos = Decimal('0.00')
-    total_egresos = Decimal('0.00')
-
-    for movimiento in movimientos:
-        if movimiento.tipo_movimiento == 'INGRESO':
-            total_ingresos += movimiento.monto
-        else:
-            total_egresos += movimiento.monto
-
+    total_ingresos = totales['total_ingresos']
+    total_egresos = totales['total_egresos']
     diferencia = Decimal('0.00')
+    estado_cierre = ''
+
     if cierre:
-        diferencia = abs(cierre.diferencia)
+        diferencia_firmada = calcular_diferencia_cierre(
+            caja,
+            cierre,
+            totales,
+        )
+        diferencia = abs(diferencia_firmada)
+        estado_cierre = obtener_estado_cierre(diferencia_firmada)
 
     return {
         'caja': caja,
@@ -66,8 +74,10 @@ def calcular_resumen_jornada(caja):
         'cierre': cierre,
         'total_ingresos': total_ingresos,
         'total_egresos': total_egresos,
-        'saldo_neto': total_ingresos - total_egresos,
+        'saldo_movimientos': totales['saldo_movimientos'],
+        'saldo_neto': totales['saldo_esperado'],
         'diferencia': diferencia,
+        'estado_cierre': estado_cierre,
     }
 
 
@@ -131,7 +141,7 @@ def inicio(request):
         total_diferencia += resumen['diferencia']
         total_apertura += caja.monto_inicial
         if resumen['cierre']:
-            estado = resumen['cierre'].estado_cierre
+            estado = resumen['estado_cierre']
             estados_cierre[estado] = estados_cierre.get(estado, 0) + 1
 
     detalle_jornada = jornadas[0] if jornadas else None
@@ -198,7 +208,7 @@ def inicio(request):
         'total_apertura': total_apertura,
         'total_ingresos': total_ingresos,
         'total_egresos': total_egresos,
-        'saldo_neto': total_ingresos - total_egresos,
+        'saldo_neto': total_apertura + total_ingresos - total_egresos,
         'total_diferencia': total_diferencia,
         'grafico_fechas': grafico_fechas,
         'grafico_ingresos': grafico_ingresos,

@@ -20,7 +20,7 @@
                 <div class="cardx">
                     <div class="label">CAJA DEL DÍA</div>
                     <div class="value">
-                        {% if caja_hoy %}ABIERTA{% else %}Pendiente{% endif %}
+                        {% if caja_dia %}{{ caja_dia.estado_caja }}{% else %}Pendiente{% endif %}
                     </div>
                     <div class="note">Estado para registrar movimientos</div>
                 </div>
@@ -30,19 +30,14 @@
                     <div class="note">Total acumulado del día</div>
                 </div>
                 <div class="cardx">
-                    <div class="label">EGRESOS</div>
+                    <div class="label">GASTOS</div>
                     <div class="value">{{ app_currency_symbol }} {{ total_egresos }}</div>
                     <div class="note">Salidas registradas del día</div>
                 </div>
                 <div class="cardx">
-                    <div class="label">INGRESOS DIGITALES</div>
-                    <div class="value">{{ app_currency_symbol }} {{ total_digital }}</div>
-                    <div class="note">Yape y otros medios</div>
-                </div>
-                <div class="cardx">
-                    <div class="label">MOVIMIENTO EFECTIVO</div>
-                    <div class="value">{{ app_currency_symbol }} {{ total_efectivo }}</div>
-                    <div class="note">{{ fecha_hoy|date:"d/m/Y" }}</div>
+                    <div class="label">SALDO DISPONIBLE</div>
+                    <div class="value">{{ app_currency_symbol }} {{ saldo_total }}</div>
+                    <div class="note">Apertura + ingresos - gastos</div>
                 </div>
             </div>
 
@@ -58,7 +53,8 @@
                     </div>
 
                     {% if caja_hoy %}
-                    <form id="form-movimiento" method="post" data-async="si">
+                    <form id="form-movimiento" method="post" data-async="si"
+                        data-saldo-disponible="{{ saldo_disponible_form }}">
                         {% csrf_token %}
                         <input type="hidden" name="accion"
                             value="{% if movimiento_editar %}editar{% else %}registrar{% endif %}">
@@ -115,6 +111,9 @@
                                         value="{% if movimiento_editar %}{{ movimiento_editar.monto }}{% endif %}"
                                         required>
                                 </div>
+                                <div class="aviso-egreso" data-egreso-warning>
+                                    Ojo: estas registrando un egreso mayor al saldo disponible.
+                                </div>
                             </div>
                         </div>
 
@@ -145,8 +144,12 @@
                     {% else %}
                     <div class="chart-area">
                         <div class="empty-state">
-                            <i class="fa-solid fa-vault"></i>
+
+                            {% if caja_cerrada %}
+                            <p>La caja del dia ya esta cerrada. No se pueden registrar movimientos</p>
+                            {% else %}
                             <p>Primero debe abrir la caja para registrar movimientos</p>
+                            {% endif %}
                         </div>
                     </div>
                     {% endif %}
@@ -164,12 +167,28 @@
                             <b>{{ hora_actual }}</b>
                         </div>
                         <div class="s-row mt-2">
+                            <span>CAJA INICIAL</span>
+                            <b>{% if caja_dia %}{{ app_currency_symbol }} {{ caja_dia.monto_inicial }}{% else %}{{ app_currency_symbol }} 0.00{% endif %}</b>
+                        </div>
+                        <div class="s-row mt-2">
+                            <span>MOV. EFECTIVO</span>
+                            <b>{{ app_currency_symbol }} {{ movimiento_efectivo }}</b>
+                        </div>
+                        <div class="s-row mt-2">
+                            <span>MOV. DIGITAL</span>
+                            <b>{{ app_currency_symbol }} {{ movimiento_digital }}</b>
+                        </div>
+                        <div class="s-row mt-2">
                             <span>EDICIÓN</span>
                             <b>{% if permite_editar %}Permitida{% else %}Bloqueada{% endif %}</b>
                         </div>
                         <div class="s-row mt-2">
                             <span>ELIMINACIÓN</span>
                             <b>{% if permite_eliminar %}Permitida{% else %}Bloqueada{% endif %}</b>
+                        </div>
+                        <div class="s-row mt-2">
+                            <span>SALDO DISPONIBLE</span>
+                            <b>{{ app_currency_symbol }} {{ saldo_total }}</b>
                         </div>
                     </div>
                 </div>
@@ -237,7 +256,7 @@
                 {% else %}
                 <div class="chart-area tabla-vacia">
                     <div class="empty-state">
-                        <i class="fa-solid fa-money-bill-transfer"></i>
+
                         <p>Todavía no hay movimientos registrados hoy</p>
                     </div>
                 </div>

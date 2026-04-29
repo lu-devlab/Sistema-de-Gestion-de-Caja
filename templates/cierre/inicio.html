@@ -26,19 +26,19 @@
                     <div class="note">Estado actual de la jornada</div>
                 </div>
                 <div class="cardx">
-                    <div class="label">INGRESOS EFECTIVO</div>
-                    <div class="value">{{ app_currency_symbol }} {{ ingresos_efectivo }}</div>
+                    <div class="label">INGRESOS TOTALES</div>
+                    <div class="value">{{ app_currency_symbol }} {{ total_ingresos }}</div>
                     <div class="note">Ingresos que sí entran a caja</div>
                 </div>
                 <div class="cardx">
-                    <div class="label">INGRESOS DIGITALES</div>
-                    <div class="value">{{ app_currency_symbol }} {{ ingresos_digitales }}</div>
+                    <div class="label">GASTOS TOTALES</div>
+                    <div class="value">{{ app_currency_symbol }} {{ total_egresos }}</div>
                     <div class="note">Yape y otros medios</div>
                 </div>
                 <div class="cardx">
                     <div class="label">SALDO ESPERADO</div>
                     <div class="value">{{ app_currency_symbol }} {{ saldo_esperado }}</div>
-                    <div class="note">Calculado solo con efectivo</div>
+                    <div class="note">Efectivo y digital consolidados</div>
                 </div>
             </div>
 
@@ -62,8 +62,8 @@
                     </div>
                     {% elif cierre_hoy %}
                     <div class="resultado-cierre">
-                        <div class="estado-cierre estado-{{ cierre_hoy.estado_cierre|lower }}">
-                            {{ cierre_hoy.estado_cierre }}
+                        <div class="estado-cierre estado-{{ estado_cierre_actual|lower }}">
+                            {{ estado_cierre_actual }}
                         </div>
                         <div class="close-summary mt-4">
                             <div class="s-row">
@@ -77,6 +77,10 @@
                             <div class="s-row mt-2">
                                 <span>SALDO REAL DIGITAL</span>
                                 <b>{{ app_currency_symbol }} {{ cierre_hoy.saldo_real_digital }}</b>
+                            </div>
+                            <div class="s-row mt-2">
+                                <span>SALDO REAL TOTAL</span>
+                                <b>{{ app_currency_symbol }} {{ saldo_real_total }}</b>
                             </div>
                             <div class="s-row mt-2">
                                 <span>DIFERENCIA</span>
@@ -151,17 +155,17 @@
                         {% csrf_token %}
 
                         <div class="grid4 cierre-resumen mb-4">
-                            <div class="cardx">
+                            <div class="cardx cierre-mini-card">
                                 <div class="label">FECHA</div>
                                 <div class="value">{{ fecha_hoy|date:"d/m/Y" }}</div>
                                 <div class="note">Fecha actual</div>
                             </div>
-                            <div class="cardx">
+                            <div class="cardx cierre-mini-card">
                                 <div class="label">HORA</div>
                                 <div class="value">{{ hora_actual }}</div>
                                 <div class="note">Hora actual</div>
                             </div>
-                            <div class="cardx">
+                            <div class="cardx cierre-mini-card cierre-mini-estado">
                                 <div class="label">ESTADO</div>
                                 <div class="value">PENDIENTE</div>
                                 <div class="note">Esperando cierre</div>
@@ -207,7 +211,7 @@
                     {% endif %}
                 </div>
 
-                <div class="card-side">
+                <div class="card-side cierre-panel-resumen">
                     <div class="label">Resumen del cierre</div>
                     <div class="close-summary mt-4">
                         <div class="s-row">
@@ -268,38 +272,56 @@
                             </tr>
                         </thead>
                         <tbody>
-                            <tr>
+                            <tr class="fila-apertura">
                                 <td>Monto inicial</td>
                                 <td>
                                     {% if caja_hoy %}{{ app_currency_symbol }} {{ caja_hoy.monto_inicial }}
                                     {% else %}{{ app_currency_symbol }} 0.00{% endif %}
                                 </td>
                             </tr>
-                            <tr>
+                            <tr class="fila-ingreso">
                                 <td>Ingresos efectivo</td>
                                 <td>{{ app_currency_symbol }} {{ ingresos_efectivo }}</td>
                             </tr>
-                            <tr>
+                            <tr class="fila-ingreso">
                                 <td>Ingresos digitales</td>
                                 <td>{{ app_currency_symbol }} {{ ingresos_digitales }}</td>
                             </tr>
-                            <tr>
+                            <tr class="fila-total-tabla fila-total-ingresos">
+                                <td>Total ingresos</td>
+                                <td>{{ app_currency_symbol }} {{ total_ingresos }}</td>
+                            </tr>
+                            <tr class="fila-egreso">
                                 <td>Egresos efectivo</td>
                                 <td>{{ app_currency_symbol }} {{ egresos_efectivo }}</td>
                             </tr>
-                            <tr>
+                            <tr class="fila-egreso">
                                 <td>Egresos digitales</td>
                                 <td>{{ app_currency_symbol }} {{ egresos_digitales }}</td>
                             </tr>
-                            <tr class="fila-total-tabla">
-                                <td>Saldo esperado</td>
+                            <tr class="fila-total-tabla fila-total-egresos">
+                                <td>Total gastos</td>
+                                <td>{{ app_currency_symbol }} {{ total_egresos }}</td>
+                            </tr>
+                            <tr class="fila-total-tabla fila-movimiento">
+                                <td>Movimiento efectivo</td>
+                                <td>{{ app_currency_symbol }} {{ movimiento_efectivo }}</td>
+                            </tr>
+                            <tr class="fila-movimiento">
+                                <td>Movimiento digital</td>
+                                <td>{{ app_currency_symbol }} {{ movimiento_digital }}</td>
+                            </tr>
+                            <tr class="fila-total-tabla fila-saldo">
+                                <td>Saldo total esperado</td>
                                 <td>{{ app_currency_symbol }} {{ saldo_esperado }}</td>
                             </tr>
-                            <tr>
-                                <td>Saldo digital esperado</td>
-                                <td>{{ app_currency_symbol }} {{ saldo_digital_esperado }}</td>
+                            {% if cierre_hoy %}
+                            <tr class="fila-total-tabla fila-saldo-real">
+                                <td>Saldo real total</td>
+                                <td>{{ app_currency_symbol }} {{ saldo_real_total }}</td>
                             </tr>
-                            <tr>
+                            {% endif %}
+                            <tr class="fila-limite {% if cierre_hoy and limite_superado %}fila-limite-alerta{% endif %}">
                                 <td>Limite diferencia</td>
                                 <td>
                                     {{ app_currency_symbol }} {{ limite_diferencia }}
