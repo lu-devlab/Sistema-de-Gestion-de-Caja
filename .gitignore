@@ -1,4 +1,7 @@
-
+# Entorno y secretos
+.env
+.env.*
+!.env.example
 
 # Python
 __pycache__/
@@ -7,7 +10,6 @@ __pycache__/
 *.so
 .Python
 build/
-develop-eggs/
 dist/
 downloads/
 eggs/
@@ -19,26 +21,39 @@ sdist/
 var/
 wheels/
 *.egg-info/
-.installed.cfg
 *.egg
 MANIFEST
 
 # Django
-.env
 db.sqlite3
 db.sqlite3-journal
+*.sqlite3
+*.sqlite3-journal
 media/
 staticfiles/
 *.log
 local_settings.py
 
-# Virtual Environment
+# Virtual environments
 venv/
 env/
 .venv/
 ENV/
 
-# IDEs and Editors
+# Testing and coverage
+.cache/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.tox/
+htmlcov/
+.coverage
+.coverage.*
+coverage.xml
+nosetests.xml
+*.cover
+
+# Editors and IDEs
 .vscode/
 .idea/
 *.swp
@@ -47,7 +62,7 @@ ENV/
 .pydevproject
 .settings/
 
-# OS specific files
+# OS files
 .DS_Store
 .DS_Store?
 ._*
@@ -55,17 +70,12 @@ ENV/
 .Trashes
 ehthumbs.db
 Thumbs.db
+Desktop.ini
 
 # Misc
-.cache/
-.pytest_cache/
-htmlcov/
-.tox/
-.coverage
-.coverage.*
-nosetests.xml
-coverage.xml
-*.cover
-.ipynb_checkpoints
+.ipynb_checkpoints/
 node_modules/
-package-lock.json
+*.tmp
+*.temp
+*.bak
+*.orig

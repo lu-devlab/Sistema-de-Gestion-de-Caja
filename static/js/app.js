@@ -3,7 +3,6 @@ const cajaPulso = (() => {
 
     function iniciar() {
         actualizarDatosGraficos(document);
-        activarAlertas(document);
         activarToasts(document);
         activarValidaciones(document);
         activarAvisoEgreso(document);
@@ -12,19 +11,6 @@ const cajaPulso = (() => {
         activarAccionesAsync(document);
         activarGraficos();
         activarDropdown(document);
-    }
-
-    function activarAlertas(root) {
-        const mensajes = root.querySelectorAll('.mensaje-estado');
-
-        mensajes.forEach((mensaje) => {
-            mensaje.classList.add('mensaje-visible');
-
-            window.setTimeout(() => {
-                mensaje.classList.remove('mensaje-visible');
-                mensaje.classList.add('mensaje-oculto');
-            }, 3200);
-        });
     }
 
     function activarToasts(root) {
@@ -395,7 +381,6 @@ const cajaPulso = (() => {
             document.title = doc.title || document.title;
             history.replaceState({}, '', destinoUrl.pathname);
             destruirGraficos();
-            activarAlertas(document);
             activarToasts(document);
             activarValidaciones(document);
             activarAvisoEgreso(document);

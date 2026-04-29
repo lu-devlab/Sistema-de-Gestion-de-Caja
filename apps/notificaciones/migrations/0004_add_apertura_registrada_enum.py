@@ -9,7 +9,19 @@ class Migration(migrations.Migration):
 
     operations = [
         migrations.RunSQL(
-            sql="ALTER TYPE tipo_notificacion_enum ADD VALUE IF NOT EXISTS 'APERTURA_REGISTRADA';",
+            sql="""
+            DO $$
+            BEGIN
+                IF EXISTS (
+                    SELECT 1
+                    FROM pg_type
+                    WHERE typname = 'tipo_notificacion_enum'
+                ) THEN
+                    ALTER TYPE tipo_notificacion_enum ADD VALUE IF NOT EXISTS 'APERTURA_REGISTRADA';
+                END IF;
+            END
+            $$;
+            """,
             reverse_sql=migrations.RunSQL.noop,
         ),
     ]

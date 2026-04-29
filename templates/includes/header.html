@@ -22,8 +22,7 @@
         <div class="user-profile">
             <div class="u-avatar">
                 {% if user.foto_perfil %}
-                <img src="{{ user.foto_perfil.url }}" alt="Avatar"
-                    style="width: 100%; height: 100%; object-fit: cover;">
+                <img src="{{ user.foto_perfil.url }}" alt="Avatar">
                 {% else %}
                 <i class="fa-solid fa-circle-user"></i>
                 {% endif %}
