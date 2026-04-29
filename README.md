@@ -94,25 +94,3 @@ Crear superusuario:
 ```bash
 python manage.py createsuperuser
 ```
-
-## Notas de desarrollo
-
-- El proyecto usa `usuarios.Usuario` como modelo de usuario personalizado.
-- La moneda visible se obtiene desde configuración y se refleja en todo el sistema.
-- Las notificaciones se sincronizan automáticamente según apertura, cierre y diferencias de caja.
-- Las migraciones sí deben versionarse en Git.
-
-## Estado actual
-
-El sistema se encuentra funcional para uso local o de presentación. Los flujos principales, configuración general, notificaciones y recuperación de contraseña ya están integrados.
-
-## Mejoras futuras sugeridas
-
-- envío real de correo para recuperación de contraseña
-- endurecimiento de seguridad para producción
-- más pruebas automatizadas en módulos operativos
-- exportación o impresión más avanzada de reportes
-
-## Autor
-
-Proyecto CajaPulso

@@ -627,10 +627,6 @@ body {
     }
 }
 
-/* ==========================================================================
-   COMPONENTES GLOBALES: TABLAS PREMIUM
-   ========================================================================== */
-
 /* Contenedor con bordes redondeados */
 .tabla-wrap,
 .tabla-avanzado-wrap {
@@ -649,7 +645,7 @@ table[class*="tabla-"] {
     border-collapse: collapse;
 }
 
-/* Encabezados Profesionales */
+/* Encabezados */
 table[class*="tabla-"] thead th {
     background: linear-gradient(180deg, #ddf1e5 0%, #cbe6d7 100%);
     padding: 16px 20px;

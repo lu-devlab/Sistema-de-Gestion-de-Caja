@@ -139,7 +139,7 @@ def inicio(request):
             else:
                 messages.error(
                     request,
-                    'Primero debe abrir la caja para registrar movimientos.',
+                    'Primero debe abrir la caja para registrar movimientos',
                 )
             return redirect('movimientos:inicio')
 

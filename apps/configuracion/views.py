@@ -84,8 +84,8 @@ def acceso_cuenta(request):
             request.POST.get('correo', '').strip()
         )
         password_actual = request.POST.get('password_actual', '').strip()
-        nueva_contrasena = request.POST.get('nueva_contrasena', '').strip()
-        repetir_contrasena = request.POST.get('repetir_contrasena', '').strip()
+        nueva_contraseña = request.POST.get('nueva_contraseña', '').strip()
+        repetir_contraseña = request.POST.get('repetir_contraseña', '').strip()
 
         cambios = False
         cambio_password = False
@@ -95,7 +95,7 @@ def acceso_cuenta(request):
                 pk=user.pk
             )
             if correo_en_uso.exists():
-                messages.error(request, 'El correo electronico ya esta en uso.')
+                messages.error(request, 'El correo electronico ya esta en uso')
                 return render(
                     request,
                     'configuracion/acceso.html',
@@ -105,9 +105,9 @@ def acceso_cuenta(request):
             user.correo = nuevo_correo
             cambios = True
 
-        if password_actual or nueva_contrasena or repetir_contrasena:
+        if password_actual or nueva_contraseña or repetir_contraseña:
             if not password_actual:
-                messages.error(request, 'Debes ingresar tu contrasena actual.')
+                messages.error(request, 'Debes ingresar tu contraseña actual.')
                 return render(
                     request,
                     'configuracion/acceso.html',
@@ -115,23 +115,23 @@ def acceso_cuenta(request):
                 )
 
             if not user.check_password(password_actual):
-                messages.error(request, 'La contrasena actual es incorrecta.')
+                messages.error(request, 'La contraseña actual es incorrecta')
                 return render(
                     request,
                     'configuracion/acceso.html',
                     {'active_module': 'configuracion'},
                 )
 
-            if not nueva_contrasena or not repetir_contrasena:
-                messages.error(request, 'Completa la nueva contrasena y su confirmacion.')
+            if not nueva_contraseña or not repetir_contraseña:
+                messages.error(request, 'Completa la nueva contraseña y su confirmacion')
                 return render(
                     request,
                     'configuracion/acceso.html',
                     {'active_module': 'configuracion'},
                 )
 
-            if nueva_contrasena != repetir_contrasena:
-                messages.error(request, 'Las contrasenas no coinciden.')
+            if nueva_contraseña != repetir_contraseña:
+                messages.error(request, 'Las contrasñas no coinciden')
                 return render(
                     request,
                     'configuracion/acceso.html',
@@ -139,7 +139,7 @@ def acceso_cuenta(request):
                 )
 
             try:
-                validate_password(nueva_contrasena, user=user)
+                validate_password(nueva_contraseña, user=user)
             except ValidationError as error:
                 messages.error(request, ' '.join(error.messages))
                 return render(
@@ -148,7 +148,7 @@ def acceso_cuenta(request):
                     {'active_module': 'configuracion'},
                 )
 
-            user.set_password(nueva_contrasena)
+            user.set_password(nueva_contraseña)
             cambios = True
             cambio_password = True
 
@@ -156,9 +156,9 @@ def acceso_cuenta(request):
             user.save()
             if cambio_password:
                 update_session_auth_hash(request, user)
-            messages.success(request, 'Datos de acceso actualizados correctamente.')
+            messages.success(request, 'Datos de acceso actualizados correctamente')
         else:
-            messages.success(request, 'No hubo cambios para guardar.')
+            messages.success(request, 'No hubo cambios para guardar')
 
         return redirect('configuracion:acceso')
 
